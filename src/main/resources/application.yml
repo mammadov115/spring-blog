@@ -3,8 +3,8 @@ spring:
     name: blog
   datasource:
     url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:        
     show-sql: true
  
