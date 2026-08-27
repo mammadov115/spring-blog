@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:16
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: blog
       POSTGRES_USER: ${DB_USERNAME}
@@ -12,18 +14,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      DB_URL: jdbc:postgresql://db:5432/blog
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      db:
-        condition: service_healthy
 
 volumes:
   postgres_data:

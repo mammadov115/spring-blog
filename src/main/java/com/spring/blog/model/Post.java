@@ -28,6 +28,9 @@ public class Post {
 
     private String title;
 
+    @Column(unique = true, nullable = false)
+    private String slug;
+
     @Column(columnDefinition = "TEXT")
     private String body;
 
@@ -45,4 +48,5 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "author_id")
     private User author;
+
 }

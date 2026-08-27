@@ -1,5 +1,4 @@
-create table posts
-(
+create table posts (
     id bigserial primary key,
     title varchar(255) not null,
     body text not null,
@@ -7,5 +6,5 @@ create table posts
     created timestamp not null,
     updated timestamp not null,
     status varchar(255) not null,
-    author_id bigint,
+    author_id bigint
 );

@@ -5,8 +5,15 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-  jpa:        
+  jpa:
     show-sql: true
- 
+    open-in-view: false
+    hibernate:
+      ddl-auto: none # Flyway owns the schema — Hibernate must not interfere
   flyway:
     enabled: true
+    locations: classpath:db/migration
+
+logging:
+  level:
+    org.flywaydb: DEBUG
