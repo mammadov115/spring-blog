@@ -28,10 +28,9 @@ public class PostController {
         return postService.getPosts();
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Retrieve a post")
-    public Post getPostById(@PathVariable Long id) {
-        return postService.getPostById(id);
+    @GetMapping("/{slug}")
+    @Operation(summary = "Retrieve a post by slug")
+    public Post getPostBySlug(@PathVariable String slug) {
+        return postService.getPostBySlug(slug);
     }
-
 }

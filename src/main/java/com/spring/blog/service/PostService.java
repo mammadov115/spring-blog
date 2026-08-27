@@ -22,4 +22,9 @@ public class PostService {
     public Post getPostById(Long id) {
         return postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
     }
+
+    public Post getPostBySlug(String slug) {
+        return postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+    }
 }
