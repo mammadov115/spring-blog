@@ -33,4 +33,5 @@ public class PostService {
     public Page<Post> getPosts(Pageable pageable) {
         return postRepository.findByStatusOrderByPublishDesc(Status.PUBLISHED, pageable);
     }
+
 }
