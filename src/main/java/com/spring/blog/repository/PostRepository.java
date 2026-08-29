@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.spring.blog.model.Post;
 import com.spring.blog.model.Status;
+import com.spring.blog.model.TagModel;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByStatusOrderByPublishDesc(Status status);
@@ -16,4 +17,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findBySlugAndStatus(String slug, Status status);
 
     Page<Post> findByStatusOrderByPublishDesc(Status status, Pageable pageable);
+
+    List<Post> findByTagsContaining(TagModel tag);
 }

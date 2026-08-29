@@ -4,7 +4,6 @@ import com.spring.blog.service.CommentService;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.blog.dto.CommentRequest;
+import com.spring.blog.dto.CommentResponse;
 import com.spring.blog.model.Comment;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,7 @@ public class CommentController {
 
     @GetMapping
     @Operation(summary = "Get comments by post")
-    public List<Comment> getComments(@PathVariable Long id){
+    public List<CommentResponse> getComments(@PathVariable Long id){
         return commentService.getCommentByPost(id);
     }
 

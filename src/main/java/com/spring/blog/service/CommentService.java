@@ -1,25 +1,32 @@
 package com.spring.blog.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.spring.blog.dto.CommentRequest;
+import com.spring.blog.dto.CommentResponse;
 import com.spring.blog.model.Comment;
 import com.spring.blog.model.Post;
 import com.spring.blog.repository.CommentRepository;
 import com.spring.blog.repository.PostRepository;
 
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
-    public List<Comment> getCommentByPost(Long postId) {
-        return commentRepository.findByPostIdOrderByCreatedDesc(postId);
+    public List<CommentResponse> getCommentByPost(Long postId) {
+        return commentRepository
+                .findByPostIdOrderByCreatedDesc(postId).stream().map(comment -> new CommentResponse(comment.getId(),
+                        comment.getName(), comment.getEmail(), comment.getBody(), comment.getCreated()))
+                .collect(Collectors.toList());
     }
 
     public Comment addComment(Long postId, CommentRequest request) {
