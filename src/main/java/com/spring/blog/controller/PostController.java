@@ -4,8 +4,9 @@ import com.spring.blog.service.EmailService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.spring.blog.model.Post;
+
 import com.spring.blog.service.PostService;
+import com.spring.blog.dto.PostResponse;
 import com.spring.blog.dto.SharePostRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 @RequestMapping("api/posts")
-@Tag(name = "posts")
+@Tag(name = "Posts")
 @RequiredArgsConstructor
 public class PostController {
     private final EmailService emailService;
@@ -32,22 +33,22 @@ public class PostController {
 
     @GetMapping("/{slug}")
     @Operation(summary = "Retrieve a post by slug")
-    public Post getPostBySlug(@PathVariable String slug) {
+    public PostResponse getPostBySlug(@PathVariable String slug) {
         return postService.getPostBySlug(slug);
     }
 
     @GetMapping
     @Operation(summary = "List published all posts by pageable")
-    public Page<Post> getAllPosts(@ParameterObject Pageable pageable) {
+    public Page<PostResponse> getAllPosts(@ParameterObject Pageable pageable) {
         return postService.getPosts(pageable);
     }
 
     @PostMapping("/{slug}/share")
     @Operation(summary = "Share post")
-    public ResponseEntity<String> sharePost(@PathVariable String slug, @RequestBody @Valid SharePostRequest request) {
-        Post post = postService.getPostBySlug(slug);
+    public ResponseEntity<String> sharePost(@PathVariable String slug, 
+                                            @RequestBody @Valid SharePostRequest request) {
+        PostResponse post = postService.getPostBySlug(slug);
         emailService.sharePost(post, request);
         return ResponseEntity.ok("Post shared successfully");
     }
-
 }

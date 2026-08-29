@@ -1,17 +1,15 @@
 package com.spring.blog.dto;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
-import lombok.Builder;
-import lombok.Data;
-
-@Data
-@Builder
-public class PostResponse {
-    private Long id;
-    private String title;
-    private String body;
-    private String authorName;
-    private LocalDateTime publish;
-    private String status;
-}
+public record PostResponse(
+    Long id,
+    String title,
+    String slug,
+    String body,
+    String authorName,
+    LocalDateTime publish,
+    String status,
+    Set<String> tags
+) {}
