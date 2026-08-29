@@ -24,8 +24,19 @@ spring:
         smtp:
           auth: true
           starttls:
-            enable: true
+            enable: true  
+
+  mvc:
+    pathmatch:
+      use-suffix-pattern: false
+  web:
+    resources:
+      add-mappings: false
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
 
 logging:
   level:
     org.flywaydb: DEBUG
+
