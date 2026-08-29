@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.spring.blog.dto.CommentRequest;
 import com.spring.blog.dto.CommentResponse;
+import com.spring.blog.exception.ResourceNotFoundException;
 import com.spring.blog.model.Comment;
 import com.spring.blog.model.Post;
 import com.spring.blog.repository.CommentRepository;
@@ -31,7 +32,7 @@ public class CommentService {
 
     public Comment addComment(Long postId, CommentRequest request) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found with id " + postId));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id " + postId));
 
         Comment comment = Comment.builder()
                 .post(post)

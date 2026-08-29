@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.blog.dto.PostResponse;
+import com.spring.blog.exception.ResourceNotFoundException;
 import com.spring.blog.model.Post;
 import com.spring.blog.model.Status;
 import com.spring.blog.model.TagModel;
@@ -41,13 +42,13 @@ public class PostService {
     }
 
     public Post getPostById(Long id) {
-        return postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
+        return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     }
 
     @Transactional(readOnly = true)
     public PostResponse getPostBySlug(String slug) {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
-                .orElseThrow(() -> new RuntimeException("Post not found: " + slug));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + slug));
         return toResponse(post);
     }
 
@@ -59,7 +60,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponse> getSimilarPosts(String slug){
-        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED).orElseThrow(()-> new RuntimeException("Post not found:" + slug));
+        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED).orElseThrow(()-> new ResourceNotFoundException("Post not found:" + slug));
 
         if (post.getTags().isEmpty()) {
             return List.of();
