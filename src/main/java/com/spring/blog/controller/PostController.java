@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +52,11 @@ public class PostController {
         PostResponse post = postService.getPostBySlug(slug);
         emailService.sharePost(post, request);
         return ResponseEntity.ok("Post shared successfully");
+    }
+
+    @GetMapping("/{slug}/similar")
+    @Operation(summary = "Get similar posts by tags")
+    public List<PostResponse> getSimilarPosts(@PathVariable String slug){
+        return postService.getSimilarPosts(slug);
     }
 }

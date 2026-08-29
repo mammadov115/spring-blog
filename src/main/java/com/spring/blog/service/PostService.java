@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,5 +56,20 @@ public class PostService {
         return postRepository.findByStatusOrderByPublishDesc(Status.PUBLISHED, pageable)
                 .map(this::toResponse);
     }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getSimilarPosts(String slug){
+        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED).orElseThrow(()-> new RuntimeException("Post not found:" + slug));
+
+        if (post.getTags().isEmpty()) {
+            return List.of();
+        }
+
+        List<Post> similarPosts = postRepository.findSimilaryPosts(post.getTags(), post.getId(), Status.PUBLISHED, PageRequest.of(0, 4));
+
+        return similarPosts.stream().map(this::toResponse).collect(Collectors.toList());
+
+    }
+
 
 }
