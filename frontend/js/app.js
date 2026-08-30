@@ -38,6 +38,10 @@ function truncateText(text, limit = 150) {
     return text.substring(0, limit) + '...';
 }
 
+function truncate(text, limit = 150) {
+    return truncateText(text, limit);
+}
+
 /**
  * Extract URL Query Parameter
  */
@@ -45,3 +49,8 @@ function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
 }
+
+function getParam(param) {
+    return getQueryParam(param);
+}
+

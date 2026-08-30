@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Blog - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="js/app.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body x-data="adminPanel()">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">Spring Blog</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Posts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="search.html">Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin.html">Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="rss.html">RSS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sitemap.html">Sitemap</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <h1 class="h3 fw-bold mb-4">Admin Panel</h1>
+
+                <!-- Manage Post Tags Section -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h2 class="h5 fw-bold mb-0">Manage Post Tags</h2>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <!-- Success Alert -->
+                        <template x-if="success">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <span x-text="success"></span>
+                                <button type="button" class="btn-close" @click="success = null" aria-label="Close"></button>
+                            </div>
+                        </template>
+
+                        <!-- Error Alert -->
+                        <template x-if="error">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong x-text="error"></strong>
+                                <button type="button" class="btn-close" @click="error = null" aria-label="Close"></button>
+                            </div>
+                        </template>
+
+                        <!-- Step 1: Load Post Tags Form -->
+                        <form @submit.prevent="loadTags()" class="mb-4">
+                            <label class="form-label fw-bold">Post Slug</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="e.g. my-first-post" x-model="slug" required>
+                                <button class="btn btn-primary px-4" type="submit" :disabled="loading">
+                                    <span x-show="loading" class="spinner-border spinner-border-sm me-1"></span>
+                                    Load Tags
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Tags Display -->
+                        <div x-show="tagsLoaded" class="mb-4 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <strong class="text-muted me-2">Current Tags:</strong>
+                                <template x-for="tag in currentTags" :key="tag.id || tag.name || tag">
+                                    <span class="badge bg-secondary tag-badge fs-6" x-text="'#' + (tag.name || tag)"></span>
+                                </template>
+                                <template x-if="currentTags.length === 0">
+                                    <span class="text-muted italic">No tags associated with this post.</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Add Tags Form -->
+                        <form @submit.prevent="addTags()">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">New Tags (comma-separated)</label>
+                                <input type="text" class="form-control" placeholder="e.g. java, spring, docker" x-model="newTagsInput" required>
+                                <div class="form-text">Enter multiple tags separated by commas.</div>
+                            </div>
+                            <button type="submit" class="btn btn-success" :disabled="submitting || !slug">
+                                <span x-show="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                                Add Tags
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+        <div class="container">
+            Spring Boot Blog UI &copy; 2026
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function adminPanel() {
+            return {
+                slug: '',
+                currentTags: [],
+                newTagsInput: '',
+                tagsLoaded: false,
+                loading: false,
+                submitting: false,
+                error: null,
+                success: null,
+
+                init() {
+                    const urlSlug = getQueryParam('slug');
+                    if (urlSlug) {
+                        this.slug = urlSlug;
+                        this.loadTags();
+                    }
+                },
+
+                async loadTags() {
+                    if (!this.slug.trim()) return;
+                    this.loading = true;
+                    this.error = null;
+                    this.success = null;
+                    this.tagsLoaded = false;
+
+                    try {
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.slug.trim())}/tags`);
+                        if (!res.ok) {
+                            throw new Error(`Failed to load tags for "${this.slug}" (${res.status})`);
+                        }
+                        const data = await res.json();
+                        this.currentTags = data || [];
+                        this.tagsLoaded = true;
+                    } catch (err) {
+                        this.error = err.message || 'Error fetching post tags';
+                        this.currentTags = [];
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async addTags() {
+                    if (!this.slug.trim() || !this.newTagsInput.trim()) return;
+                    this.submitting = true;
+                    this.error = null;
+                    this.success = null;
+
+                    // Parse comma separated tags array of strings
+                    const tagsArray = this.newTagsInput
+                        .split(',')
+                        .map(t => t.trim())
+                        .filter(t => t.length > 0);
+
+                    if (tagsArray.length === 0) {
+                        this.error = 'Please enter valid tags separated by commas.';
+                        this.submitting = false;
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.slug.trim())}/tags`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(tagsArray)
+                        });
+
+                        if (!res.ok) {
+                            throw new Error(`Failed to add tags (${res.status})`);
+                        }
+
+                        this.success = 'Tags added successfully!';
+                        this.newTagsInput = '';
+                        await this.loadTags();
+                    } catch (err) {
+                        this.error = err.message || 'Error adding tags';
+                    } finally {
+                        this.submitting = false;
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>

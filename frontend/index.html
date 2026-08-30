@@ -27,6 +27,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="search.html">Search</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.html">Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="rss.html">RSS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sitemap.html">Sitemap</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -37,8 +46,17 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h1 class="h3 fw-bold mb-0" x-text="activeTag ? 'Posts Tagged: #' + activeTag : 'Latest Posts'">Latest Posts</h1>
+                    
+                    <div class="d-flex gap-2 align-items-center" x-show="!activeTag">
+                        <span class="small text-muted me-1">Pagination:</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn" :class="paginationMode === 'keyset' ? 'btn-primary' : 'btn-outline-primary'" @click="switchMode('keyset')">Keyset Pagination</button>
+                            <button type="button" class="btn" :class="paginationMode === 'offset' ? 'btn-primary' : 'btn-outline-primary'" @click="switchMode('offset')">Offset Pagination</button>
+                        </div>
+                    </div>
+
                     <template x-if="activeTag">
                         <button class="btn btn-outline-secondary btn-sm" @click="clearTagFilter()">Clear Filter</button>
                     </template>
@@ -62,7 +80,7 @@
                                 </h2>
                                 
                                 <div class="text-muted small mb-3 d-flex flex-wrap align-items-center gap-3">
-                                    <span><i class="bi bi-person"></i> By <strong x-text="post.authorName || 'Anonymous'"></strong></span>
+                                    <span>By <strong x-text="post.authorName || 'Anonymous'"></strong></span>
                                     <span>•</span>
                                     <span x-text="formatDate(post.publish)"></span>
                                 </div>
@@ -96,9 +114,16 @@
                     </div>
                 </div>
 
-                <!-- Load More Button -->
-                <div class="text-center mt-4" x-show="hasNext && !loading">
+                <!-- Keyset Mode: Load More Button -->
+                <div class="text-center mt-4" x-show="paginationMode === 'keyset' && hasNext && !loading && !activeTag">
                     <button class="btn btn-primary px-4 py-2" @click="loadMore()">Load More</button>
+                </div>
+
+                <!-- Offset Mode: Page Navigation -->
+                <div class="d-flex justify-content-between align-items-center mt-4 p-3 bg-white rounded shadow-sm" x-show="paginationMode === 'offset' && totalPages > 0 && !loading && !activeTag">
+                    <button class="btn btn-outline-primary btn-sm" :disabled="currentPage <= 0" @click="goToPage(currentPage - 1)">&laquo; Previous</button>
+                    <span class="text-muted small">Page <strong x-text="currentPage + 1"></strong> of <strong x-text="totalPages"></strong></span>
+                    <button class="btn btn-outline-primary btn-sm" :disabled="currentPage >= totalPages - 1" @click="goToPage(currentPage + 1)">Next &raquo;</button>
                 </div>
 
             </div>
@@ -117,8 +142,13 @@
         function postList() {
             return {
                 posts: [],
+                paginationMode: 'keyset', // 'keyset' or 'offset'
                 nextCursor: null,
                 hasNext: false,
+                currentPage: 0,
+                totalPages: 0,
+                totalElements: 0,
+                pageSize: 10,
                 loading: false,
                 error: null,
                 activeTag: null,
@@ -132,11 +162,30 @@
                     }
                 },
                 
+                async switchMode(mode) {
+                    if (this.paginationMode === mode) return;
+                    this.paginationMode = mode;
+                    this.posts = [];
+                    this.nextCursor = null;
+                    this.hasNext = false;
+                    this.currentPage = 0;
+                    this.totalPages = 0;
+                    await this.fetchPosts();
+                },
+
                 async fetchPosts() {
+                    if (this.paginationMode === 'offset') {
+                        await this.fetchOffsetPosts(this.currentPage);
+                    } else {
+                        await this.fetchKeysetPosts();
+                    }
+                },
+
+                async fetchKeysetPosts() {
                     this.loading = true;
                     this.error = null;
                     try {
-                        let url = `${API_BASE}/api/posts/keyset?size=10`;
+                        let url = `${API_BASE}/api/posts/keyset?size=${this.pageSize}`;
                         if (this.nextCursor !== null && this.nextCursor !== undefined) {
                             url += `&cursor=${this.nextCursor}`;
                         }
@@ -148,6 +197,27 @@
                         this.posts = [...this.posts, ...(data.content || [])];
                         this.hasNext = !!data.hasNext;
                         this.nextCursor = data.nextCursor !== undefined ? data.nextCursor : null;
+                    } catch (err) {
+                        this.error = err.message || 'Error fetching posts';
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async fetchOffsetPosts(page = 0) {
+                    this.loading = true;
+                    this.error = null;
+                    try {
+                        const url = `${API_BASE}/api/posts?page=${page}&size=${this.pageSize}`;
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`Failed to load posts (${response.status})`);
+                        }
+                        const data = await response.json();
+                        this.posts = data.content || [];
+                        this.currentPage = data.number !== undefined ? data.number : page;
+                        this.totalPages = data.totalPages || 0;
+                        this.totalElements = data.totalElements || 0;
                     } catch (err) {
                         this.error = err.message || 'Error fetching posts';
                     } finally {
@@ -176,7 +246,14 @@
 
                 loadMore() {
                     if (this.hasNext && !this.loading) {
-                        this.fetchPosts();
+                        this.fetchKeysetPosts();
+                    }
+                },
+
+                async goToPage(page) {
+                    if (page >= 0 && page < this.totalPages && !this.loading) {
+                        this.currentPage = page;
+                        await this.fetchOffsetPosts(page);
                     }
                 },
 
@@ -188,3 +265,4 @@
     </script>
 </body>
 </html>
+
