@@ -16,5 +16,19 @@ services:
       timeout: 5s
       retries: 5
 
+  nginx:
+    container_name: blog-nginx-dev
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../frontend:/usr/share/nginx/html:ro
+      - ../nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - BACKEND_HOST=${BACKEND_HOST}
+      - BACKEND_PORT=${BACKEND_PORT}
+
 volumes:
   postgres_data_dev:

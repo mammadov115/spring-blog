@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Blog - Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="js/app.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body x-data="searchPosts()">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">Spring Blog</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Posts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="search.html">Search</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <h1 class="h3 fw-bold mb-4">Search Posts</h1>
+
+                <!-- Search Input Bar -->
+                <form @submit.prevent="performSearch()" class="mb-4">
+                    <div class="input-group input-group-lg shadow-sm">
+                        <input type="text" class="form-control" placeholder="Type keywords..." x-model="query" required>
+                        <button class="btn btn-primary px-4" type="submit" :disabled="loading">
+                            <span x-show="loading" class="spinner-border spinner-border-sm me-1"></span>
+                            Search
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Error Message -->
+                <template x-if="error">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong x-text="error"></strong>
+                        <button type="button" class="btn-close" @click="error = null" aria-label="Close"></button>
+                    </div>
+                </template>
+
+                <!-- Loading Spinner -->
+                <div x-show="loading" class="spinner-container">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Searching...</span>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <template x-if="searched && !loading">
+                    <div>
+                        <p class="text-muted small mb-3">
+                            Found <strong x-text="results.length"></strong> result(s) for "<span x-text="query"></span>"
+                        </p>
+
+                        <!-- Post Cards -->
+                        <div class="vstack gap-3">
+                            <template x-for="post in results" :key="post.id">
+                                <div class="card post-card shadow-sm border-0">
+                                    <div class="card-body p-4">
+                                        <h2 class="h4 card-title mb-2">
+                                            <a :href="'post.html?slug=' + post.slug" class="text-decoration-none text-dark fw-bold" x-text="post.title"></a>
+                                        </h2>
+                                        
+                                        <div class="text-muted small mb-3 d-flex flex-wrap align-items-center gap-3">
+                                            <span>By <strong x-text="post.authorName || 'Anonymous'"></strong></span>
+                                            <span>•</span>
+                                            <span x-text="formatDate(post.publish)"></span>
+                                        </div>
+
+                                        <p class="card-text text-secondary mb-3" x-text="truncateText(post.body, 150)"></p>
+
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <template x-for="tag in post.tags" :key="tag">
+                                                    <a :href="'index.html?tag=' + encodeURIComponent(tag)" class="badge bg-secondary text-decoration-none tag-badge" x-text="'#' + tag"></a>
+                                                </template>
+                                            </div>
+                                            <a :href="'post.html?slug=' + post.slug" class="btn btn-sm btn-outline-primary">Read More &rarr;</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- No Results -->
+                        <template x-if="results.length === 0">
+                            <div class="text-center py-5 bg-white rounded shadow-sm">
+                                <p class="text-muted fs-5 mb-0">No results found for "<span x-text="query"></span>".</p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+        <div class="container">
+            Spring Boot Blog UI &copy; 2026
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function searchPosts() {
+            return {
+                query: '',
+                results: [],
+                loading: false,
+                searched: false,
+                error: null,
+
+                async init() {
+                    const urlQuery = getQueryParam('query');
+                    if (urlQuery) {
+                        this.query = urlQuery;
+                        await this.performSearch();
+                    }
+                },
+
+                async performSearch() {
+                    if (!this.query.trim()) return;
+                    this.loading = true;
+                    this.error = null;
+                    this.searched = true;
+
+                    try {
+                        const response = await fetch(`${API_BASE}/api/posts/search?query=${encodeURIComponent(this.query)}`);
+                        if (!response.ok) {
+                            throw new Error(`Search request failed (${response.status})`);
+                        }
+                        const data = await response.json();
+                        this.results = data || [];
+                        const newUrl = `${window.location.pathname}?query=${encodeURIComponent(this.query)}`;
+                        window.history.replaceState({ path: newUrl }, '', newUrl);
+                    } catch (err) {
+                        this.error = err.message || 'Error searching posts';
+                        this.results = [];
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>

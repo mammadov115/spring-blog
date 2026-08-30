@@ -33,5 +33,19 @@ services:
       db:
         condition: service_healthy
 
+  nginx:
+    container_name: blog-nginx-prod
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ../frontend:/usr/share/nginx/html:ro
+      - ../nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - BACKEND_HOST=app
+      - BACKEND_PORT=${BACKEND_PORT}
+    depends_on:
+      - app
+
 volumes:
   postgres_data_prod:

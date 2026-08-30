@@ -29,7 +29,7 @@ spring-build:
 docker-logs-dev:
 	docker compose -f docker/compose.dev.yml logs -f
 
-logs-prod:
+docker-logs-prod:
 	docker compose -f docker/compose.prod.yml logs -f
 
 
