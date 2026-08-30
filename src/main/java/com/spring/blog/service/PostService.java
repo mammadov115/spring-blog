@@ -15,6 +15,7 @@ import com.spring.blog.model.Post;
 import com.spring.blog.model.Status;
 import com.spring.blog.model.TagModel;
 import com.spring.blog.repository.PostRepository;
+import com.spring.blog.util.PostMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final PostMapper postMapper;
 
     private PostResponse toResponse(Post post) {
         return new PostResponse(
@@ -74,7 +76,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String query){
-        return  postRepository.fullTextSearch(query).stream().map(this::toResponse).collect(Collectors.toList());
+        return  postRepository.fullTextSearch(query).stream().map(postMapper::toResponse).collect(Collectors.toList());
     }
 
 }
