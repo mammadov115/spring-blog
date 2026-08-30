@@ -1,0 +1,5 @@
+     DNS lookup: %{time_namelookup}s
+        Connect: %{time_connect}s
+   Start transfer: %{time_starttransfer}s
+          Total: %{time_total}s
+    HTTP status: %{http_code}

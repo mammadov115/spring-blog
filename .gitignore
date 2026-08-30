@@ -32,5 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
-.env
+
 spring.session.sql
+
+# env
+project/.env.dev
+project/.env.prod
