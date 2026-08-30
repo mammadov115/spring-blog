@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.blog.service.PostService;
 import com.spring.blog.dto.KeysetPostResponse;
+import com.spring.blog.dto.PostRequest;
 import com.spring.blog.dto.PostResponse;
 import com.spring.blog.dto.SharePostRequest;
 
@@ -22,10 +23,13 @@ import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("api/posts")
@@ -75,5 +79,24 @@ public class PostController {
         @RequestParam(defaultValue = "10") int size
     ){
         return postService.getPostsKeyset(cursor, size);
+    }
+
+    @PostMapping 
+    @Operation(summary = "Create a new post")
+    public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostRequest request){
+        return  ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(request));
+    }
+
+    @PutMapping("/{slug}")
+    @Operation(summary = "Update a post by slug")
+    public ResponseEntity<PostResponse> updatePost(@PathVariable String slug, @RequestBody @Valid PostRequest request){
+        return ResponseEntity.ok(postService.updatePost(slug, request));
+    }
+
+    @DeleteMapping("/{slug}")
+    @Operation(summary = "Delete a post by slug")
+    public ResponseEntity<Void> deletePost(@PathVariable String slug){
+        postService.deletePost(slug);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.spring.blog.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.blog.dto.KeysetPostResponse;
+import com.spring.blog.dto.PostRequest;
 import com.spring.blog.dto.PostResponse;
+import com.spring.blog.exception.ConflictException;
 import com.spring.blog.exception.ResourceNotFoundException;
 import com.spring.blog.model.Post;
 import com.spring.blog.model.Status;
@@ -98,7 +101,46 @@ public class PostService {
 
         return new KeysetPostResponse(content, hasNext, nextCursor);
 
+    }
+
+    @Transactional
+    public PostResponse createPost(PostRequest request) {
+        String slug = (request.slug() == null || request.slug().isBlank()) ? generateSlug(request.title())
+                : request.slug();
+        if (postRepository.findBySlugAndStatus(slug, Status.PUBLISHED).isPresent()) {
+            throw new ConflictException("Slug already exists: " + slug);
+        }
+
+        Post post = new Post();
+        post.setTitle(request.title());
+        post.setSlug(slug);
+        post.setBody(request.body());
+        post.setStatus(request.status());
+        post.setPublish(LocalDateTime.now());
+
+        return toResponse(postRepository.save(post));
+    }
+
+    @Transactional
+    public PostResponse updatePost(String slug, PostRequest request) {
+        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
+                .orElseThrow(() -> new ResourceNotFoundException("Page not found exception " + slug));
+        post.setTitle(request.title());
+        post.setBody(request.body());
+        post.setStatus(request.status());
+
+        return toResponse(postRepository.save(post));
 
     }
 
+    @Transactional
+    public void deletePost(String slug) {
+        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found " + slug));
+        postRepository.delete(post);
+    }
+
+    private String generateSlug(String title) {
+        return title.toLowerCase().replaceAll("[^a-z0-9\\s-]", "").replaceAll("\\s+", "-").replaceAll("-+", "-").trim();
+    }
 }

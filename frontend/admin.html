@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spring Blog - Admin Panel</title>
+    <meta name="description" content="Admin panel to create, update, delete posts and manage tags.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <script src="js/app.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
+
 <body x-data="adminPanel()">
 
     <!-- Navbar -->
@@ -21,94 +23,310 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Posts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="search.html">Search</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="admin.html">Admin</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="rss.html">RSS</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="sitemap.html">Sitemap</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">Posts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="search.html">Search</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="admin.html">Admin</a></li>
+                    <li class="nav-item"><a class="nav-link" href="rss.html">RSS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="sitemap.html">Sitemap</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="container py-4">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                
+
                 <h1 class="h3 fw-bold mb-4">Admin Panel</h1>
 
-                <!-- Manage Post Tags Section -->
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-header bg-white py-3">
-                        <h2 class="h5 fw-bold mb-0">Manage Post Tags</h2>
-                    </div>
-                    <div class="card-body p-4">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4" id="adminTabs">
+                    <li class="nav-item">
+                        <button class="nav-link" :class="activeTab === 'create' ? 'active' : ''"
+                            @click="activeTab = 'create'" id="tab-create">Create Post</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" :class="activeTab === 'update' ? 'active' : ''"
+                            @click="activeTab = 'update'" id="tab-update">Update Post</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" :class="activeTab === 'delete' ? 'active' : ''"
+                            @click="activeTab = 'delete'" id="tab-delete">Delete Post</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" :class="activeTab === 'tags' ? 'active' : ''"
+                            @click="activeTab = 'tags'" id="tab-tags">Manage Tags</button>
+                    </li>
+                </ul>
 
-                        <!-- Success Alert -->
-                        <template x-if="success">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <span x-text="success"></span>
-                                <button type="button" class="btn-close" @click="success = null" aria-label="Close"></button>
-                            </div>
-                        </template>
+                <!-- ===== CREATE POST ===== -->
+                <div x-show="activeTab === 'create'">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h5 fw-bold mb-0">Create New Post</h2>
+                        </div>
+                        <div class="card-body p-4">
+                            <template x-if="createSuccess">
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <span x-text="createSuccess"></span>
+                                    <button type="button" class="btn-close" @click="createSuccess = null"></button>
+                                </div>
+                            </template>
+                            <template x-if="createError">
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <span x-text="createError"></span>
+                                    <button type="button" class="btn-close" @click="createError = null"></button>
+                                </div>
+                            </template>
 
-                        <!-- Error Alert -->
-                        <template x-if="error">
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <strong x-text="error"></strong>
-                                <button type="button" class="btn-close" @click="error = null" aria-label="Close"></button>
-                            </div>
-                        </template>
-
-                        <!-- Step 1: Load Post Tags Form -->
-                        <form @submit.prevent="loadTags()" class="mb-4">
-                            <label class="form-label fw-bold">Post Slug</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" placeholder="e.g. my-first-post" x-model="slug" required>
-                                <button class="btn btn-primary px-4" type="submit" :disabled="loading">
-                                    <span x-show="loading" class="spinner-border spinner-border-sm me-1"></span>
-                                    Load Tags
+                            <form @submit.prevent="createPost()" id="form-create">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" x-model="createForm.title" required
+                                        placeholder="My Awesome Post">
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Author Name</label>
+                                        <input type="text" class="form-control" x-model="createForm.authorName"
+                                            placeholder="John Doe">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Status</label>
+                                        <select class="form-select" x-model="createForm.status">
+                                            <option value="DRAFT">Draft</option>
+                                            <option value="PUBLISHED">Published</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Publish Date</label>
+                                    <input type="datetime-local" class="form-control" x-model="createForm.publish">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Body <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" rows="8" x-model="createForm.body" required
+                                        placeholder="Write your post content here..."></textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Tags <span
+                                            class="text-muted fw-normal">(comma-separated)</span></label>
+                                    <input type="text" class="form-control" x-model="createForm.tags"
+                                        placeholder="java, spring, docker">
+                                </div>
+                                <button type="submit" class="btn btn-success px-4" :disabled="creating"
+                                    id="btn-create-post">
+                                    <span x-show="creating" class="spinner-border spinner-border-sm me-1"></span>
+                                    Create Post
                                 </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
-                        <!-- Tags Display -->
-                        <div x-show="tagsLoaded" class="mb-4 p-3 bg-light rounded">
-                            <div class="d-flex align-items-center flex-wrap gap-2">
-                                <strong class="text-muted me-2">Current Tags:</strong>
-                                <template x-for="tag in currentTags" :key="tag.id || tag.name || tag">
-                                    <span class="badge bg-secondary tag-badge fs-6" x-text="'#' + (tag.name || tag)"></span>
-                                </template>
-                                <template x-if="currentTags.length === 0">
-                                    <span class="text-muted italic">No tags associated with this post.</span>
-                                </template>
+                <!-- ===== UPDATE POST ===== -->
+                <div x-show="activeTab === 'update'">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h5 fw-bold mb-0">Update Post</h2>
+                        </div>
+                        <div class="card-body p-4">
+                            <template x-if="updateSuccess">
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <span x-text="updateSuccess"></span>
+                                    <button type="button" class="btn-close" @click="updateSuccess = null"></button>
+                                </div>
+                            </template>
+                            <template x-if="updateError">
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <span x-text="updateError"></span>
+                                    <button type="button" class="btn-close" @click="updateError = null"></button>
+                                </div>
+                            </template>
+
+                            <!-- Step 1: Load post -->
+                            <form @submit.prevent="loadPostForUpdate()" class="mb-4" id="form-load-update">
+                                <label class="form-label fw-bold">Post Slug</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="e.g. my-first-post"
+                                        x-model="updateSlug" required>
+                                    <button class="btn btn-primary px-4" type="submit" :disabled="loadingUpdate"
+                                        id="btn-load-update">
+                                        <span x-show="loadingUpdate"
+                                            class="spinner-border spinner-border-sm me-1"></span>
+                                        Load Post
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Step 2: Edit form -->
+                            <div x-show="updateLoaded">
+                                <hr class="mb-4">
+                                <form @submit.prevent="updatePost()" id="form-update">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Title <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" x-model="updateForm.title" required>
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Author Name</label>
+                                            <input type="text" class="form-control" x-model="updateForm.authorName">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Status</label>
+                                            <select class="form-select" x-model="updateForm.status">
+                                                <option value="DRAFT">Draft</option>
+                                                <option value="PUBLISHED">Published</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Publish Date</label>
+                                        <input type="datetime-local" class="form-control" x-model="updateForm.publish">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">Body <span
+                                                class="text-danger">*</span></label>
+                                        <textarea class="form-control" rows="8" x-model="updateForm.body"
+                                            required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary px-4" :disabled="updating"
+                                        id="btn-update-post">
+                                        <span x-show="updating" class="spinner-border spinner-border-sm me-1"></span>
+                                        Save Changes
+                                    </button>
+                                </form>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Step 2: Add Tags Form -->
-                        <form @submit.prevent="addTags()">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">New Tags (comma-separated)</label>
-                                <input type="text" class="form-control" placeholder="e.g. java, spring, docker" x-model="newTagsInput" required>
-                                <div class="form-text">Enter multiple tags separated by commas.</div>
+                <!-- ===== DELETE POST ===== -->
+                <div x-show="activeTab === 'delete'">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h5 fw-bold mb-0 text-danger">Delete Post</h2>
+                        </div>
+                        <div class="card-body p-4">
+                            <template x-if="deleteSuccess">
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <span x-text="deleteSuccess"></span>
+                                    <button type="button" class="btn-close" @click="deleteSuccess = null"></button>
+                                </div>
+                            </template>
+                            <template x-if="deleteError">
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <span x-text="deleteError"></span>
+                                    <button type="button" class="btn-close" @click="deleteError = null"></button>
+                                </div>
+                            </template>
+
+                            <form @submit.prevent="loadPostForDelete()" class="mb-4" id="form-load-delete">
+                                <label class="form-label fw-bold">Post Slug</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="e.g. my-first-post"
+                                        x-model="deleteSlug" required>
+                                    <button class="btn btn-outline-danger px-4" type="submit" :disabled="loadingDelete"
+                                        id="btn-load-delete">
+                                        <span x-show="loadingDelete"
+                                            class="spinner-border spinner-border-sm me-1"></span>
+                                        Load Post
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Post preview before delete -->
+                            <div x-show="deleteLoaded && deletePostData" class="p-3 bg-light rounded mb-4">
+                                <p class="mb-1"><strong>Title:</strong> <span
+                                        x-text="deletePostData && deletePostData.title"></span></p>
+                                <p class="mb-1"><strong>Author:</strong> <span
+                                        x-text="deletePostData && (deletePostData.authorName || 'Anonymous')"></span>
+                                </p>
+                                <p class="mb-0"><strong>Status:</strong> <span
+                                        x-text="deletePostData && deletePostData.status"></span></p>
                             </div>
-                            <button type="submit" class="btn btn-success" :disabled="submitting || !slug">
-                                <span x-show="submitting" class="spinner-border spinner-border-sm me-1"></span>
-                                Add Tags
-                            </button>
-                        </form>
 
+                            <div x-show="deleteLoaded">
+                                <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
+                                    <strong>⚠️ Warning:</strong> This action is irreversible.
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="confirmDelete"
+                                        x-model="deleteConfirmed">
+                                    <label class="form-check-label" for="confirmDelete">
+                                        I understand this will permanently delete the post.
+                                    </label>
+                                </div>
+                                <button class="btn btn-danger px-4" @click="deletePost()"
+                                    :disabled="!deleteConfirmed || deleting" id="btn-delete-post">
+                                    <span x-show="deleting" class="spinner-border spinner-border-sm me-1"></span>
+                                    Delete Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== MANAGE TAGS ===== -->
+                <div x-show="activeTab === 'tags'">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h5 fw-bold mb-0">Manage Post Tags</h2>
+                        </div>
+                        <div class="card-body p-4">
+                            <template x-if="tagSuccess">
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    <span x-text="tagSuccess"></span>
+                                    <button type="button" class="btn-close" @click="tagSuccess = null"></button>
+                                </div>
+                            </template>
+                            <template x-if="tagError">
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <span x-text="tagError"></span>
+                                    <button type="button" class="btn-close" @click="tagError = null"></button>
+                                </div>
+                            </template>
+
+                            <form @submit.prevent="loadTags()" class="mb-4" id="form-load-tags">
+                                <label class="form-label fw-bold">Post Slug</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="e.g. my-first-post"
+                                        x-model="tagSlug" required>
+                                    <button class="btn btn-primary px-4" type="submit" :disabled="loadingTags"
+                                        id="btn-load-tags">
+                                        <span x-show="loadingTags" class="spinner-border spinner-border-sm me-1"></span>
+                                        Load Tags
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div x-show="tagsLoaded" class="mb-4 p-3 bg-light rounded">
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <strong class="text-muted me-2">Current Tags:</strong>
+                                    <template x-for="tag in currentTags" :key="tag.id || tag.name || tag">
+                                        <span class="badge bg-secondary fs-6" x-text="'#' + (tag.name || tag)"></span>
+                                    </template>
+                                    <template x-if="currentTags.length === 0">
+                                        <span class="text-muted fst-italic">No tags yet.</span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <form @submit.prevent="addTags()" id="form-add-tags">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">New Tags <span
+                                            class="text-muted fw-normal">(comma-separated)</span></label>
+                                    <input type="text" class="form-control" placeholder="e.g. java, spring, docker"
+                                        x-model="newTagsInput" required>
+                                </div>
+                                <button type="submit" class="btn btn-success" :disabled="submittingTags || !tagSlug"
+                                    id="btn-add-tags">
+                                    <span x-show="submittingTags" class="spinner-border spinner-border-sm me-1"></span>
+                                    Add Tags
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -116,97 +334,248 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-        <div class="container">
-            Spring Boot Blog UI &copy; 2026
-        </div>
+        <div class="container">Spring Boot Blog UI &copy; 2026</div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function adminPanel() {
             return {
-                slug: '',
+                activeTab: 'create',
+
+                // --- Create ---
+                createForm: { title: '', authorName: '', status: 'DRAFT', publish: '', body: '', tags: '' },
+                creating: false,
+                createSuccess: null,
+                createError: null,
+
+                // --- Update ---
+                updateSlug: '',
+                updateForm: { title: '', authorName: '', status: 'DRAFT', publish: '', body: '' },
+                updateLoaded: false,
+                loadingUpdate: false,
+                updating: false,
+                updateSuccess: null,
+                updateError: null,
+
+                // --- Delete ---
+                deleteSlug: '',
+                deletePostData: null,
+                deleteLoaded: false,
+                loadingDelete: false,
+                deleting: false,
+                deleteConfirmed: false,
+                deleteSuccess: null,
+                deleteError: null,
+
+                // --- Tags ---
+                tagSlug: '',
                 currentTags: [],
                 newTagsInput: '',
                 tagsLoaded: false,
-                loading: false,
-                submitting: false,
-                error: null,
-                success: null,
+                loadingTags: false,
+                submittingTags: false,
+                tagSuccess: null,
+                tagError: null,
 
                 init() {
-                    const urlSlug = getQueryParam('slug');
-                    if (urlSlug) {
-                        this.slug = urlSlug;
-                        this.loadTags();
+                    const tab = getQueryParam('tab');
+                    if (tab) this.activeTab = tab;
+                    const slug = getQueryParam('slug');
+                    if (slug) {
+                        if (tab === 'update') { this.updateSlug = slug; this.loadPostForUpdate(); }
+                        else if (tab === 'delete') { this.deleteSlug = slug; this.loadPostForDelete(); }
+                        else if (tab === 'tags') { this.tagSlug = slug; this.loadTags(); }
+                    }
+                },
+
+                toLocalDatetime(isoString) {
+                    if (!isoString) return '';
+                    // Strip seconds/ms and convert to local datetime-local format
+                    const d = new Date(isoString);
+                    const pad = n => String(n).padStart(2, '0');
+                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                },
+
+                async createPost() {
+                    this.creating = true;
+                    this.createSuccess = null;
+                    this.createError = null;
+                    try {
+                        const payload = {
+                            title: this.createForm.title,
+                            authorName: this.createForm.authorName || undefined,
+                            status: this.createForm.status,
+                            publish: this.createForm.publish ? new Date(this.createForm.publish).toISOString() : undefined,
+                            body: this.createForm.body,
+                            tags: this.createForm.tags
+                                ? this.createForm.tags.split(',').map(t => t.trim()).filter(Boolean)
+                                : []
+                        };
+                        const res = await fetch(`${API_BASE}/api/posts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            throw new Error(err.message || `Failed to create post (${res.status})`);
+                        }
+                        const created = await res.json();
+                        this.createSuccess = `Post "${created.title}" created successfully! Slug: ${created.slug}`;
+                        this.createForm = { title: '', authorName: '', status: 'DRAFT', publish: '', body: '', tags: '' };
+                    } catch (err) {
+                        this.createError = err.message || 'Error creating post';
+                    } finally {
+                        this.creating = false;
+                    }
+                },
+
+                async loadPostForUpdate() {
+                    if (!this.updateSlug.trim()) return;
+                    this.loadingUpdate = true;
+                    this.updateLoaded = false;
+                    this.updateSuccess = null;
+                    this.updateError = null;
+                    try {
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.updateSlug.trim())}`);
+                        if (!res.ok) throw new Error(`Post not found (${res.status})`);
+                        const post = await res.json();
+                        this.updateForm = {
+                            title: post.title || '',
+                            authorName: post.authorName || '',
+                            status: post.status || 'DRAFT',
+                            publish: this.toLocalDatetime(post.publish),
+                            body: post.body || ''
+                        };
+                        this.updateLoaded = true;
+                    } catch (err) {
+                        this.updateError = err.message || 'Error loading post';
+                    } finally {
+                        this.loadingUpdate = false;
+                    }
+                },
+
+                async updatePost() {
+                    this.updating = true;
+                    this.updateSuccess = null;
+                    this.updateError = null;
+                    try {
+                        const payload = {
+                            title: this.updateForm.title,
+                            authorName: this.updateForm.authorName || undefined,
+                            status: this.updateForm.status,
+                            publish: this.updateForm.publish ? new Date(this.updateForm.publish).toISOString() : undefined,
+                            body: this.updateForm.body
+                        };
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.updateSlug.trim())}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            throw new Error(err.message || `Failed to update post (${res.status})`);
+                        }
+                        this.updateSuccess = 'Post updated successfully!';
+                    } catch (err) {
+                        this.updateError = err.message || 'Error updating post';
+                    } finally {
+                        this.updating = false;
+                    }
+                },
+
+                async loadPostForDelete() {
+                    if (!this.deleteSlug.trim()) return;
+                    this.loadingDelete = true;
+                    this.deleteLoaded = false;
+                    this.deletePostData = null;
+                    this.deleteConfirmed = false;
+                    this.deleteSuccess = null;
+                    this.deleteError = null;
+                    try {
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.deleteSlug.trim())}`);
+                        if (!res.ok) throw new Error(`Post not found (${res.status})`);
+                        this.deletePostData = await res.json();
+                        this.deleteLoaded = true;
+                    } catch (err) {
+                        this.deleteError = err.message || 'Error loading post';
+                    } finally {
+                        this.loadingDelete = false;
+                    }
+                },
+
+                async deletePost() {
+                    if (!this.deleteConfirmed || !this.deleteSlug.trim()) return;
+                    this.deleting = true;
+                    this.deleteSuccess = null;
+                    this.deleteError = null;
+                    try {
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.deleteSlug.trim())}`, {
+                            method: 'DELETE'
+                        });
+                        if (!res.ok) throw new Error(`Failed to delete post (${res.status})`);
+                        this.deleteSuccess = `Post "${this.deletePostData.title}" deleted successfully.`;
+                        this.deletePostData = null;
+                        this.deleteLoaded = false;
+                        this.deleteSlug = '';
+                        this.deleteConfirmed = false;
+                    } catch (err) {
+                        this.deleteError = err.message || 'Error deleting post';
+                    } finally {
+                        this.deleting = false;
                     }
                 },
 
                 async loadTags() {
-                    if (!this.slug.trim()) return;
-                    this.loading = true;
-                    this.error = null;
-                    this.success = null;
+                    if (!this.tagSlug.trim()) return;
+                    this.loadingTags = true;
+                    this.tagError = null;
+                    this.tagSuccess = null;
                     this.tagsLoaded = false;
-
                     try {
-                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.slug.trim())}/tags`);
-                        if (!res.ok) {
-                            throw new Error(`Failed to load tags for "${this.slug}" (${res.status})`);
-                        }
-                        const data = await res.json();
-                        this.currentTags = data || [];
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.tagSlug.trim())}/tags`);
+                        if (!res.ok) throw new Error(`Failed to load tags (${res.status})`);
+                        this.currentTags = await res.json() || [];
                         this.tagsLoaded = true;
                     } catch (err) {
-                        this.error = err.message || 'Error fetching post tags';
-                        this.currentTags = [];
+                        this.tagError = err.message || 'Error fetching tags';
                     } finally {
-                        this.loading = false;
+                        this.loadingTags = false;
                     }
                 },
 
                 async addTags() {
-                    if (!this.slug.trim() || !this.newTagsInput.trim()) return;
-                    this.submitting = true;
-                    this.error = null;
-                    this.success = null;
-
-                    // Parse comma separated tags array of strings
-                    const tagsArray = this.newTagsInput
-                        .split(',')
-                        .map(t => t.trim())
-                        .filter(t => t.length > 0);
-
+                    if (!this.tagSlug.trim() || !this.newTagsInput.trim()) return;
+                    this.submittingTags = true;
+                    this.tagError = null;
+                    this.tagSuccess = null;
+                    const tagsArray = this.newTagsInput.split(',').map(t => t.trim()).filter(Boolean);
                     if (tagsArray.length === 0) {
-                        this.error = 'Please enter valid tags separated by commas.';
-                        this.submitting = false;
+                        this.tagError = 'Please enter valid tags separated by commas.';
+                        this.submittingTags = false;
                         return;
                     }
-
                     try {
-                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.slug.trim())}/tags`, {
+                        const res = await fetch(`${API_BASE}/api/posts/${encodeURIComponent(this.tagSlug.trim())}/tags`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(tagsArray)
                         });
-
-                        if (!res.ok) {
-                            throw new Error(`Failed to add tags (${res.status})`);
-                        }
-
-                        this.success = 'Tags added successfully!';
+                        if (!res.ok) throw new Error(`Failed to add tags (${res.status})`);
+                        this.tagSuccess = 'Tags added successfully!';
                         this.newTagsInput = '';
                         await this.loadTags();
                     } catch (err) {
-                        this.error = err.message || 'Error adding tags';
+                        this.tagError = err.message || 'Error adding tags';
                     } finally {
-                        this.submitting = false;
+                        this.submittingTags = false;
                     }
                 }
             };
         }
     </script>
 </body>
+
 </html>
