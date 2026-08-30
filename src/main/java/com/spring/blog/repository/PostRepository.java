@@ -49,4 +49,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.tags WHERE p.slug = :slug AND p.status = :status")
     Optional<Post> findBySlugAndStatusWithTags(@Param("slug") String slug, @Param("status") Status status);
 
+    @Query("""
+            select p from Post p
+            where p.status = :status
+            and (:cursor is null or p.id < :cursor)
+            order by p.id desc
+            """)
+    List<Post>  findByStatusKeyset(
+        @Param("status") Status status,
+        @Param("cursor") Long cursor,
+        Pageable pageable
+    );
 }

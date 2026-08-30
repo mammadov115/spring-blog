@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import com.spring.blog.service.PostService;
+import com.spring.blog.dto.KeysetPostResponse;
 import com.spring.blog.dto.PostResponse;
 import com.spring.blog.dto.SharePostRequest;
 
@@ -65,5 +66,14 @@ public class PostController {
     @Operation(summary = "Full text search posts")
     public List<PostResponse> searchPosts(@RequestParam String query){
         return postService.searchPosts(query);
+    }
+
+    @GetMapping("/keyset")
+    @Operation(summary = "List posts with keyset pagination")
+    public KeysetPostResponse getPostsKeyset(
+        @RequestParam(required = false) Long cursor,
+        @RequestParam(defaultValue = "10") int size
+    ){
+        return postService.getPostsKeyset(cursor, size);
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.blog.dto.CommentRequest;
 import com.spring.blog.dto.CommentResponse;
-import com.spring.blog.model.Comment;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

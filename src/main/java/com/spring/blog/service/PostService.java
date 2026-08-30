@@ -1,5 +1,6 @@
 package com.spring.blog.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.spring.blog.dto.KeysetPostResponse;
 import com.spring.blog.dto.PostResponse;
 import com.spring.blog.exception.ResourceNotFoundException;
 import com.spring.blog.model.Post;
@@ -61,22 +63,42 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getSimilarPosts(String slug){
-        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED).orElseThrow(()-> new ResourceNotFoundException("Post not found:" + slug));
+    public List<PostResponse> getSimilarPosts(String slug) {
+        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found:" + slug));
 
         if (post.getTags().isEmpty()) {
             return List.of();
         }
 
-        List<Post> similarPosts = postRepository.findSimilaryPosts(post.getTags(), post.getId(), Status.PUBLISHED, PageRequest.of(0, 4));
+        List<Post> similarPosts = postRepository.findSimilaryPosts(post.getTags(), post.getId(), Status.PUBLISHED,
+                PageRequest.of(0, 4));
 
         return similarPosts.stream().map(this::toResponse).collect(Collectors.toList());
 
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> searchPosts(String query){
-        return  postRepository.fullTextSearch(query).stream().map(postMapper::toResponse).collect(Collectors.toList());
+    public List<PostResponse> searchPosts(String query) {
+        return postRepository.fullTextSearch(query).stream().map(postMapper::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public KeysetPostResponse getPostsKeyset(Long cursor, int size) {
+        List<Post> posts = postRepository.findByStatusKeyset(Status.PUBLISHED, cursor, PageRequest.of(0, size + 1));
+        boolean hasNext = posts.size() > size;
+
+        if (hasNext) {
+            posts = new ArrayList<>(posts.subList(0, size));
+        }
+
+        List<PostResponse> content = posts.stream().map(this::toResponse).collect(Collectors.toList());
+
+        Long nextCursor = hasNext ? posts.get(posts.size() - 1).getId() : null;
+
+        return new KeysetPostResponse(content, hasNext, nextCursor);
+
+
     }
 
 }
