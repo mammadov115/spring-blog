@@ -37,4 +37,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("postId") Long postId,
             @Param("status") Status status,
             Pageable pageable);
+
+    @Query(value = """
+                select * from posts
+                where status = 'PUBLISHED'
+                and search_vector @@ plainto_tsquery('english', :query)
+                order by ts_rank(search_vector, plainto_tsquery('english', :query)) desc
+            """, nativeQuery = true)
+    List<Post> fullTextSearch(@Param("query") String query);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.tags WHERE p.slug = :slug AND p.status = :status")
+    Optional<Post> findBySlugAndStatusWithTags(@Param("slug") String slug, @Param("status") Status status);
+
 }

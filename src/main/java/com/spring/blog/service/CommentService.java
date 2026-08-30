@@ -30,7 +30,8 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    public Comment addComment(Long postId, CommentRequest request) {
+    @Transactional
+    public CommentResponse addComment(Long postId, CommentRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found with id " + postId));
 
@@ -41,6 +42,7 @@ public class CommentService {
                 .body(request.getBody())
                 .build();
 
-        return commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
+        return new CommentResponse(saved.getId(), saved.getName(), saved.getEmail(), saved.getBody(), saved.getCreated());
     }
 }

@@ -72,5 +72,9 @@ public class PostService {
 
     }
 
+    @Transactional(readOnly = true)
+    public List<PostResponse> searchPosts(String query){
+        return  postRepository.fullTextSearch(query).stream().map(this::toResponse).collect(Collectors.toList());
+    }
 
 }

@@ -37,9 +37,8 @@ public class CommentController {
 
     @PostMapping
     @Operation(summary = "Add comment to post")
-    public ResponseEntity<Comment> addComment(@PathVariable Long id, @RequestBody @Valid CommentRequest request) {
-        Comment saved = commentService.addComment(id, request);
-        
+    public ResponseEntity<CommentResponse> addComment(@PathVariable Long id, @RequestBody @Valid CommentRequest request) {
+        CommentResponse saved = commentService.addComment(id, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
     

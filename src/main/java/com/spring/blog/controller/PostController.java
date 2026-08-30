@@ -2,6 +2,7 @@ package com.spring.blog.controller;
 
 import com.spring.blog.service.EmailService;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -58,5 +59,11 @@ public class PostController {
     @Operation(summary = "Get similar posts by tags")
     public List<PostResponse> getSimilarPosts(@PathVariable String slug){
         return postService.getSimilarPosts(slug);
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Full text search posts")
+    public List<PostResponse> searchPosts(@RequestParam String query){
+        return postService.searchPosts(query);
     }
 }
