@@ -9,11 +9,14 @@ spring:
     show-sql: true
     open-in-view: false
     hibernate:
-      ddl-auto: none 
+      ddl-auto: none
   flyway:
     enabled: true
     locations: classpath:db/migration
-
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -24,21 +27,22 @@ spring:
         smtp:
           auth: true
           starttls:
-            enable: true  
-
+            enable: true
   web:
     resources:
       add-mappings: false
-
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-
   cache:
     type: redis
     redis:
       time-to-live: 3600
+
+server:
+  tomcat:
+    max-http-form-post-size: 2MB
 
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
@@ -46,4 +50,3 @@ app:
 logging:
   level:
     org.flywaydb: DEBUG
-
