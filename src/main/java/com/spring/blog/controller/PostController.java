@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.spring.blog.service.PostService;
 import com.spring.blog.dto.KeysetPostResponse;
 import com.spring.blog.dto.PostRequest;
@@ -41,20 +40,23 @@ public class PostController {
 
     @GetMapping("/{slug}")
     @Operation(summary = "Retrieve a post by slug")
-    public PostResponse getPostBySlug(@PathVariable String slug) {
-        return postService.getPostBySlug(slug);
+    public ResponseEntity<PostResponse> getPostBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok().header("Cache-Control", "public, max-age=3600")
+                .body(postService.getPostBySlug(slug));
     }
 
     @GetMapping
     @Operation(summary = "List published all posts by pageable")
-    public Page<PostResponse> getAllPosts(@ParameterObject Pageable pageable) {
-        return postService.getPosts(pageable);
+    public ResponseEntity<Page<PostResponse>> getAllPosts(@ParameterObject Pageable pageable) {
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=60")
+                .body(postService.getPosts(pageable));
     }
 
     @PostMapping("/{slug}/share")
     @Operation(summary = "Share post")
-    public ResponseEntity<String> sharePost(@PathVariable String slug, 
-                                            @RequestBody @Valid SharePostRequest request) {
+    public ResponseEntity<String> sharePost(@PathVariable String slug,
+            @RequestBody @Valid SharePostRequest request) {
         PostResponse post = postService.getPostBySlug(slug);
         emailService.sharePost(post, request);
         return ResponseEntity.ok("Post shared successfully");
@@ -62,40 +64,42 @@ public class PostController {
 
     @GetMapping("/{slug}/similar")
     @Operation(summary = "Get similar posts by tags")
-    public List<PostResponse> getSimilarPosts(@PathVariable String slug){
-        return postService.getSimilarPosts(slug);
+    public ResponseEntity<List<PostResponse>> getSimilarPosts(@PathVariable String slug) {
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=3600")
+                .body(postService.getSimilarPosts(slug));
     }
 
     @GetMapping("/search")
     @Operation(summary = "Full text search posts")
-    public List<PostResponse> searchPosts(@RequestParam String query){
+    public List<PostResponse> searchPosts(@RequestParam String query) {
         return postService.searchPosts(query);
     }
 
     @GetMapping("/keyset")
     @Operation(summary = "List posts with keyset pagination")
-    public KeysetPostResponse getPostsKeyset(
-        @RequestParam(required = false) Long cursor,
-        @RequestParam(defaultValue = "10") int size
-    ){
-        return postService.getPostsKeyset(cursor, size);
+    public ResponseEntity<KeysetPostResponse> getPostsKeyset(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok().header("Cache-Control", "public, max-age=60")
+                .body(postService.getPostsKeyset(cursor, size));
     }
 
-    @PostMapping 
+    @PostMapping
     @Operation(summary = "Create a new post")
-    public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostRequest request){
-        return  ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(request));
+    public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(request));
     }
 
     @PutMapping("/{slug}")
     @Operation(summary = "Update a post by slug")
-    public ResponseEntity<PostResponse> updatePost(@PathVariable String slug, @RequestBody @Valid PostRequest request){
+    public ResponseEntity<PostResponse> updatePost(@PathVariable String slug, @RequestBody @Valid PostRequest request) {
         return ResponseEntity.ok(postService.updatePost(slug, request));
     }
 
     @DeleteMapping("/{slug}")
     @Operation(summary = "Delete a post by slug")
-    public ResponseEntity<Void> deletePost(@PathVariable String slug){
+    public ResponseEntity<Void> deletePost(@PathVariable String slug) {
         postService.deletePost(slug);
         return ResponseEntity.noContent().build();
     }

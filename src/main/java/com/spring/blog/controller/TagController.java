@@ -3,6 +3,7 @@ package com.spring.blog.controller;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +41,9 @@ public class TagController {
 
     @GetMapping("/tags/{tagName}/posts")
     @Operation(summary = "Get posts by tags")
-    public List<PostResponse> getPostsByTag(@PathVariable String tagName) {
-        return tagService.getPostsByTag(tagName);
+    public ResponseEntity<List<PostResponse>> getPostsByTag(@PathVariable String tagName) {
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=300")
+                .body(tagService.getPostsByTag(tagName));
     }
 }

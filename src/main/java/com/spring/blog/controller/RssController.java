@@ -11,17 +11,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
-@RestController 
+@RestController
 @RequestMapping("/feed")
-@RequiredArgsConstructor 
+@RequiredArgsConstructor
 @Tag(name = "RSS Feed")
 public class RssController {
     private final RssService rssService;
 
     @GetMapping(value = "/rss", produces = MediaType.APPLICATION_XML_VALUE)
-    @Operation (summary="Get RSS feed")
-    public RssFeed getRssFeed(){
-        return rssService.getFeed();
+    @Operation(summary = "Get RSS feed")
+    public ResponseEntity<RssFeed> getRssFeed() {
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=1800")
+                .body(rssService.getFeed());
     }
 }
