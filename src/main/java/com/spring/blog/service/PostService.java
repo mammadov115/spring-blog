@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ public class PostService {
         return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     }
 
+    @Cacheable(value = "post", key = "#slug")
     @Transactional(readOnly = true)
     public PostResponse getPostBySlug(String slug) {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
@@ -65,6 +69,7 @@ public class PostService {
                 .map(this::toResponse);
     }
 
+    @Cacheable(value = "similar", key = "#slug")
     @Transactional(readOnly = true)
     public List<PostResponse> getSimilarPosts(String slug) {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
@@ -121,6 +126,10 @@ public class PostService {
         return toResponse(postRepository.save(post));
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "post", key = "#slug"),
+            @CacheEvict(value = "similar", key = "slug")
+    })
     @Transactional
     public PostResponse updatePost(String slug, PostRequest request) {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
@@ -133,6 +142,10 @@ public class PostService {
 
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "post", key = "#slug"),
+            @CacheEvict(value = "similar", key = "#slug")
+    })
     @Transactional
     public void deletePost(String slug) {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
