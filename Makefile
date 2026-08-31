@@ -1,4 +1,4 @@
-.PHONY: docker-dev-up docker-dev-stop docker-prod-up docker-prod-stop spring-run spring-build docker-logs-dev logs-prod clean
+.PHONY: docker-dev-up docker-dev-stop docker-prod-up docker-prod-stop spring-run spring-build docker-dev-logs docker-prod-logs clean
 
 
 docker-dev-up:
@@ -26,10 +26,10 @@ spring-build:
 	./mvnw package -DskipTests
 
 
-docker-logs-dev:
+docker-dev-logs:
 	docker compose -f docker/compose.dev.yml logs -f
 
-docker-logs-prod:
+docker-prod-logs:
 	docker compose -f docker/compose.prod.yml logs -f
 
 
