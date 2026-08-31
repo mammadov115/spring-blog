@@ -15,31 +15,36 @@ import com.spring.blog.repository.PostRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 
 @Service
 @RequiredArgsConstructor
 public class RssService {
-    private final PostRepository postRepository;
+	private final PostRepository postRepository;
 
-    @Value("${app.base-url}")
-    private String baseUrl;
+	@Value("${app.base-url}")
+	private String baseUrl;
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss",
-            Locale.ENGLISH);
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss",
+			Locale.ENGLISH);
 
-    @Transactional(readOnly = true)
-    public RssFeed getFeed() {
-        List<RssItem> items = postRepository.findByStatusOrderByPublishDesc(Status.PUBLISHED, PageRequest.of(0, 20))
-                .getContent().stream()
-                .map(post -> new RssItem(post.getTitle(), baseUrl + "/api/posts/" + post.getSlug(),
-                        post.getBody().length() > 200 ? post.getBody().substring(0, 200) + "..." : post.getBody(),
-                        post.getPublish().format(FORMATTER), baseUrl + "/api/posts/" + post.getSlug()))
-                .toList();
+	@Cacheable(value = "rss")
+	@Transactional(readOnly = true)
+	public RssFeed getFeed() {
+		List<RssItem> items = postRepository
+				.findByStatusOrderByPublishDesc(Status.PUBLISHED, PageRequest.of(0, 20))
+				.getContent().stream()
+				.map(post -> new RssItem(post.getTitle(), baseUrl + "/api/posts/" + post.getSlug(),
+						post.getBody().length() > 200 ? post.getBody().substring(0, 200) + "..."
+								: post.getBody(),
+						post.getPublish().format(FORMATTER),
+						baseUrl + "/api/posts/" + post.getSlug()))
+				.toList();
 
-        RssChannel channel = new RssChannel("My Blog", baseUrl, "Brief about blog", items);
+		RssChannel channel = new RssChannel("My Blog", baseUrl, "Brief about blog", items);
 
-        return new RssFeed("2.0", channel);
-    }
+		return new RssFeed("2.0", channel);
+	}
 
 }

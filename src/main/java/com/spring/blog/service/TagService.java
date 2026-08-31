@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.spring.blog.dto.PostResponse;
@@ -22,41 +24,43 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TagService {
-        private final PostRepository postRepository;
-        private final TagRepository tagRepository;
-        private final PostMapper postMapper;
+    private final PostRepository postRepository;
+    private final TagRepository tagRepository;
+    private final PostMapper postMapper;
 
-        @Transactional
-        public Post addTagsToPost(String slug, Set<String> tagNames) {
-                Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
-                                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    @CacheEvict(value = "posts-by-tag", allEntries = true)
+    @Transactional
+    public Post addTagsToPost(String slug, Set<String> tagNames) {
+        Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-                Set<TagModel> tags = tagNames.stream()
-                                .map(name -> tagRepository.findByName(name)
-                                                .orElseGet(() -> tagRepository
-                                                                .save(TagModel.builder().name(name).build())))
-                                .collect(Collectors.toSet());
+        Set<TagModel> tags = tagNames.stream()
+                .map(name -> tagRepository.findByName(name)
+                        .orElseGet(() -> tagRepository
+                                .save(TagModel.builder().name(name).build())))
+                .collect(Collectors.toSet());
 
-                post.getTags().addAll(tags);
-                return postRepository.save(post);
+        post.getTags().addAll(tags);
+        return postRepository.save(post);
 
-        }
+    }
 
-        @Transactional
-        public Set<TagModel> getTagsByPost(String slug) {
-                Post post = postRepository.findBySlugAndStatusWithTags(slug, Status.PUBLISHED)
-                                .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + slug));
-                return post.getTags();
-        }
+    @Cacheable(value = "posts-by-tag", key = "#tagName")
+    @Transactional
+    public Set<TagModel> getTagsByPost(String slug) {
+        Post post = postRepository.findBySlugAndStatusWithTags(slug, Status.PUBLISHED)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + slug));
+        return post.getTags();
+    }
 
-        @Transactional(readOnly = true)
-        public List<PostResponse> getPostsByTag(String tagName) {
-                TagModel tag = tagRepository.findByName(tagName)
-                                .orElseThrow(() -> new ResourceNotFoundException("Tag not found: " + tagName));
-                return postRepository.findByTagsContaining(tag)
-                                .stream()
-                                .map(postMapper::toResponse)
-                                .collect(Collectors.toList());
-        }
+    @Transactional(readOnly = true)
+    public List<PostResponse> getPostsByTag(String tagName) {
+        TagModel tag = tagRepository.findByName(tagName)
+                .orElseThrow(() -> new ResourceNotFoundException("Tag not found: " + tagName));
+        return postRepository.findByTagsContaining(tag)
+                .stream()
+                .map(postMapper::toResponse)
+                .collect(Collectors.toList());
+    }
 
 }

@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +13,11 @@ import com.spring.blog.dto.SitemapUrl;
 import com.spring.blog.model.Status;
 import com.spring.blog.repository.PostRepository;
 
+
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Cacheable(value = "sitemap")
 @RequiredArgsConstructor
 public class SiteMapService {
     private final PostRepository postRepository;
