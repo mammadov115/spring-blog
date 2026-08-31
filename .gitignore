@@ -38,3 +38,6 @@ spring.session.sql
 # env
 project/.env.dev
 project/.env.prod
+
+# graphify
+graphify-out/*
