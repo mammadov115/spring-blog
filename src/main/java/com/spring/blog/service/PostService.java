@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
@@ -126,9 +127,10 @@ public class PostService {
         return toResponse(postRepository.save(post));
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "post", key = "#slug"),
-            @CacheEvict(value = "similar", key = "slug")
+    @Caching(put = {
+            @CachePut(value = "post", key = "#slug")
+    }, evict = {
+            @CacheEvict(value = "similar", key = "#slug")
     })
     @Transactional
     public PostResponse updatePost(String slug, PostRequest request) {
