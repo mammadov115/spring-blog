@@ -16,6 +16,12 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    container_name: blog-redis-dev
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
   nginx:
     container_name: blog-nginx-dev
     image: nginx:alpine

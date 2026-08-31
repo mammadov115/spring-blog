@@ -9,7 +9,7 @@ spring:
     show-sql: true
     open-in-view: false
     hibernate:
-      ddl-auto: none # Flyway owns the schema — Hibernate must not interfere
+      ddl-auto: none 
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -26,12 +26,18 @@ spring:
           starttls:
             enable: true  
 
-  mvc:
-    pathmatch:
-      use-suffix-pattern: false
   web:
     resources:
       add-mappings: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  cache:
+    redis:
+      time-to-live: 3600
 
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
