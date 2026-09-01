@@ -55,9 +55,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             and (:cursor is null or p.id < :cursor)
             order by p.id desc
             """)
-    List<Post>  findByStatusKeyset(
-        @Param("status") Status status,
-        @Param("cursor") Long cursor,
-        Pageable pageable
-    );
+    List<Post> findByStatusKeyset(
+            @Param("status") Status status,
+            @Param("cursor") Long cursor,
+            Pageable pageable);
 }
