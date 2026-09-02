@@ -27,12 +27,12 @@ spring-build:
 
 
 docker-dev-logs:
-	docker compose -f docker/compose.dev.yml logs -f
+	docker compose -f docker/compose.dev.yml --env-file project/.env.dev logs -f
 
 docker-prod-logs:
-	docker compose -f docker/compose.prod.yml logs -f
+	docker compose -f docker/compose.prod.yml --env-file project/.env.prod logs -f
 
 
 clean:
 	./mvnw clean
-	docker compose -f docker/compose.dev.yml down -v
+	docker compose -f docker/compose.dev.yml --env-file project/.env.dev down -v
