@@ -1,0 +1,1 @@
+create index idx_post_tags_tag_id on post_tags(tag_id);

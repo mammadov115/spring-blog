@@ -24,16 +24,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByTagsContaining(TagModel tag);
 
     @Query("""
-                select p from Post p
-                join p.tags t
-                where t in :tags
-                and p.id != :postId
-                and p.status = :status
-                group by p
-                order by count(t) desc, p.publish desc
-            """)
+            select distinct p 
+            from Post p
+            inner join p.tags t
+            where t.id in (
+                select t2.id from Post p2 join p2.tags t2 where p2.id = :postId
+            )
+            and p.id != :postId
+            and p.status = :status
+            order by p.publish desc
+                    """)
     List<Post> findSimilaryPosts(
-            @Param("tags") Set<TagModel> tags,
             @Param("postId") Long postId,
             @Param("status") Status status,
             Pageable pageable);
