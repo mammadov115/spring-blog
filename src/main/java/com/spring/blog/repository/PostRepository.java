@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,10 +24,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByTagsContaining(TagModel tag);
 
+    @EntityGraph(attributePaths = { "author", "tags" })
     @Query("""
-            select distinct p 
-            from Post p
-            inner join p.tags t
+            select distinct p from Post p
+             join  p.tags t
             where t.id in (
                 select t2.id from Post p2 join p2.tags t2 where p2.id = :postId
             )
@@ -34,7 +35,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             and p.status = :status
             order by p.publish desc
                     """)
-    List<Post> findSimilaryPosts(
+    List<Post> findSimilarPosts(
             @Param("postId") Long postId,
             @Param("status") Status status,
             Pageable pageable);

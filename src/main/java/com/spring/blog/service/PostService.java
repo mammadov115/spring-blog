@@ -80,7 +80,7 @@ public class PostService {
             return List.of();
         }
 
-        List<Post> similarPosts = postRepository.findSimilaryPosts(post.getId(), Status.PUBLISHED,
+        List<Post> similarPosts = postRepository.findSimilarPosts(post.getId(), Status.PUBLISHED,
                 PageRequest.of(0, 4));
 
         return similarPosts.stream().map(this::toResponse).collect(Collectors.toList());
