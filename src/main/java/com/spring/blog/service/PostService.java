@@ -113,7 +113,7 @@ public class PostService {
     public PostResponse createPost(PostRequest request) {
         String slug = (request.slug() == null || request.slug().isBlank()) ? generateSlug(request.title())
                 : request.slug();
-        if (postRepository.findBySlugAndStatus(slug, Status.PUBLISHED).isPresent()) {
+        if (postRepository.existsBySlug(slug)) {
             throw new ConflictException("Slug already exists: " + slug);
         }
 

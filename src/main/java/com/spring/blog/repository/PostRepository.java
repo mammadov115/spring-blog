@@ -20,6 +20,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	@EntityGraph(attributePaths = { "author", "tags" })
 	Optional<Post> findBySlugAndStatus(String slug, Status status);
 
+	boolean existsBySlug(String slug);
+
 	Page<Post> findByStatusOrderByPublishDesc(Status status, Pageable pageable);
 
 	List<Post> findByTagsContaining(TagModel tag);
