@@ -86,7 +86,10 @@ public class PostController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new post")
+    @Operation(
+        summary = "Create a new post",
+        description = "Creates a new post. If slug is empty or omitted, it is auto-generated from the title (e.g. 'My Post' → 'my-post'). HTML in body is sanitized automatically."
+    )
     public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(request));
     }
