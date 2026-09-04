@@ -22,7 +22,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 	boolean existsBySlug(String slug);
 
-	Page<Post> findByStatusOrderByPublishDesc(Status status, Pageable pageable);
+	@Query("""
+		select p from Post p
+		where p.status = :status
+		order by p.publish desc nulls last, p.id desc
+		""")
+	Page<Post> findByStatus(@Param("status") Status status, Pageable pageable);
 
 	List<Post> findByTagsContaining(TagModel tag);
 

@@ -74,7 +74,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponse> getPosts(Pageable pageable) {
-        return postRepository.findByStatusOrderByPublishDesc(Status.PUBLISHED, pageable)
+        return postRepository.findByStatus(Status.PUBLISHED, pageable)
                 .map(this::toResponse);
     }
 
