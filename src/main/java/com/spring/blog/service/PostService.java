@@ -26,6 +26,8 @@ import com.spring.blog.model.TagModel;
 import com.spring.blog.repository.PostRepository;
 import com.spring.blog.util.PostMapper;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -120,7 +122,7 @@ public class PostService {
         Post post = new Post();
         post.setTitle(request.title());
         post.setSlug(slug);
-        post.setBody(request.body());
+        post.setBody(Jsoup.clean(request.body(), Safelist.basicWithImages()));
         post.setStatus(request.status());
         post.setPublish(LocalDateTime.now());
 
@@ -137,7 +139,7 @@ public class PostService {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
                 .orElseThrow(() -> new ResourceNotFoundException("Page not found exception " + slug));
         post.setTitle(request.title());
-        post.setBody(request.body());
+        post.setBody(Jsoup.clean(request.body(), Safelist.basicWithImages()));
         post.setStatus(request.status());
 
         return toResponse(postRepository.save(post));
