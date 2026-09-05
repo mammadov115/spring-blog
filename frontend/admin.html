@@ -15,9 +15,9 @@
 <body x-data="adminPanel()">
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg site-nav sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">Spring Blog</a>
+            <a class="navbar-brand" href="index.html"><span class="brand-dot"></span>Spring Blog</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -37,7 +37,8 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
 
-                <h1 class="h3 fw-bold mb-4">Admin Panel</h1>
+                <p class="page-kicker">Studio</p>
+                <h1 class="page-title mb-4">Admin</h1>
 
                 <!-- Tab Navigation -->
                 <ul class="nav nav-tabs mb-4" id="adminTabs">
@@ -334,8 +335,8 @@
         </div>
     </main>
 
-    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-        <div class="container">Spring Boot Blog UI &copy; 2026</div>
+    <footer class="site-footer">
+        <div class="container">Spring Blog &copy; 2026</div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

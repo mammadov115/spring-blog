@@ -13,9 +13,9 @@
 <body x-data="postList()">
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg site-nav sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">Spring Blog</a>
+            <a class="navbar-brand" href="index.html"><span class="brand-dot"></span>Spring Blog</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -46,19 +46,21 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                    <h1 class="h3 fw-bold mb-0" x-text="activeTag ? 'Posts Tagged: #' + activeTag : 'Latest Posts'">Latest Posts</h1>
+                <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+                    <div>
+                        <p class="page-kicker">Journal</p>
+                        <h1 class="page-title" x-text="activeTag ? 'Tagged #' + activeTag : 'Latest posts'">Latest posts</h1>
+                    </div>
                     
-                    <div class="d-flex gap-2 align-items-center" x-show="!activeTag">
-                        <span class="small text-muted me-1">Pagination:</span>
+                    <div class="d-flex gap-2 align-items-center mode-toggle" x-show="!activeTag">
                         <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn" :class="paginationMode === 'keyset' ? 'btn-primary' : 'btn-outline-primary'" @click="switchMode('keyset')">Keyset Pagination</button>
-                            <button type="button" class="btn" :class="paginationMode === 'offset' ? 'btn-primary' : 'btn-outline-primary'" @click="switchMode('offset')">Offset Pagination</button>
+                            <button type="button" class="btn" :class="paginationMode === 'keyset' ? 'btn-primary' : 'btn-outline-primary'" @click="switchMode('keyset')">Keyset</button>
+                            <button type="button" class="btn" :class="paginationMode === 'offset' ? 'btn-primary' : 'btn-outline-primary'" @click="switchMode('offset')">Offset</button>
                         </div>
                     </div>
 
                     <template x-if="activeTag">
-                        <button class="btn btn-outline-secondary btn-sm" @click="clearTagFilter()">Clear Filter</button>
+                        <button class="btn btn-outline-secondary btn-sm" @click="clearTagFilter()">Clear filter</button>
                     </template>
                 </div>
 
@@ -102,8 +104,8 @@
 
                 <!-- Empty State -->
                 <template x-if="!loading && posts.length === 0 && !error">
-                    <div class="text-center py-5">
-                        <p class="text-muted fs-5">No posts found.</p>
+                    <div class="empty-state">
+                        <p class="fs-5 mb-0">No posts found.</p>
                     </div>
                 </template>
 
@@ -130,11 +132,8 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-        <div class="container">
-            Spring Boot Blog UI &copy; 2026
-        </div>
+    <footer class="site-footer">
+        <div class="container">Spring Blog &copy; 2026</div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

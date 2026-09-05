@@ -13,9 +13,9 @@
 <body x-data="sitemapViewer()">
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg site-nav sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">Spring Blog</a>
+            <a class="navbar-brand" href="index.html"><span class="brand-dot"></span>Spring Blog</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -46,10 +46,13 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                    <h1 class="h3 fw-bold mb-0">Sitemap Viewer</h1>
+                <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+                    <div>
+                        <p class="page-kicker">Discovery</p>
+                        <h1 class="page-title">Sitemap</h1>
+                    </div>
                     <a :href="sitemapUrl" target="_blank" class="btn btn-outline-primary btn-sm">
-                        Open Sitemap XML
+                        Open XML
                     </a>
                 </div>
 
@@ -68,16 +71,22 @@
                     </div>
                 </div>
 
+                <p class="text-muted small mb-3" x-show="!loading && !error && totalCount > 0">
+                    Showing <strong x-text="urls.length"></strong> of
+                    <strong x-text="totalCount.toLocaleString()"></strong> URLs
+                    <span x-show="totalCount > urls.length"> (preview — open XML for the full file)</span>
+                </p>
+
                 <!-- Sitemap Table -->
                 <template x-if="!loading && urls.length > 0">
                     <div class="card shadow-sm border-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="table-dark">
+                                <thead>
                                     <tr>
-                                        <th scope="col">Location (loc)</th>
-                                        <th scope="col">Last Modified (lastmod)</th>
-                                        <th scope="col">Change Freq</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Last modified</th>
+                                        <th scope="col">Change freq</th>
                                         <th scope="col">Priority</th>
                                     </tr>
                                 </thead>
@@ -102,8 +111,8 @@
 
                 <!-- Empty State -->
                 <template x-if="!loading && urls.length === 0 && !error">
-                    <div class="text-center py-5 bg-white rounded shadow-sm">
-                        <p class="text-muted fs-5 mb-0">No entries found in sitemap.</p>
+                    <div class="empty-state">
+                        <p class="fs-5 mb-0">No entries found in sitemap.</p>
                     </div>
                 </template>
 
@@ -111,11 +120,8 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-        <div class="container">
-            Spring Boot Blog UI &copy; 2026
-        </div>
+    <footer class="site-footer">
+        <div class="container">Spring Blog &copy; 2026</div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -124,6 +130,8 @@
             return {
                 sitemapUrl: `${API_BASE}/sitemap.xml`,
                 urls: [],
+                totalCount: 0,
+                displayLimit: 50,
                 loading: true,
                 error: null,
 
@@ -131,33 +139,33 @@
                     await this.fetchSitemap();
                 },
 
+                xmlTagText(block, tag) {
+                    const match = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i'));
+                    return match ? match[1].trim() : '';
+                },
+
                 async fetchSitemap() {
                     this.loading = true;
                     this.error = null;
                     try {
-                        const res = await fetch(this.sitemapUrl);
-                        if (!res.ok) {
-                            throw new Error(`Failed to fetch sitemap XML (${res.status})`);
-                        }
-                        const xmlText = await res.text();
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-                        if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
-                            throw new Error('Failed to parse XML response');
+                        const xmlText = await fetchText(this.sitemapUrl);
+                        if (looksLikeHtml(xmlText)) {
+                            throw new Error('Got an HTML page instead of XML. Nginx is not proxying /sitemap.xml to the API.');
                         }
 
-                        const urlNodes = xmlDoc.querySelectorAll('url');
-                        const parsedUrls = [];
-                        urlNodes.forEach(node => {
-                            parsedUrls.push({
-                                loc: node.querySelector('loc')?.textContent || '',
-                                lastmod: node.querySelector('lastmod')?.textContent || '',
-                                changefreq: node.querySelector('changefreq')?.textContent || '',
-                                priority: node.querySelector('priority')?.textContent || ''
+                        this.totalCount = (xmlText.match(/<url>/g) || []).length;
+                        const parsed = [];
+                        const re = /<url\b[^>]*>[\s\S]*?<\/url>/g;
+                        let match;
+                        while (parsed.length < this.displayLimit && (match = re.exec(xmlText))) {
+                            parsed.push({
+                                loc: this.xmlTagText(match[0], 'loc'),
+                                lastmod: this.xmlTagText(match[0], 'lastmod'),
+                                changefreq: this.xmlTagText(match[0], 'changefreq'),
+                                priority: this.xmlTagText(match[0], 'priority')
                             });
-                        });
-                        this.urls = parsedUrls;
+                        }
+                        this.urls = parsed;
                     } catch (err) {
                         this.error = err.message || 'Error loading sitemap XML';
                     } finally {

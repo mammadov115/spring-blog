@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.spring.blog.dto.SiteMap;
 import com.spring.blog.dto.SitemapUrl;
 import com.spring.blog.model.Status;
+import org.springframework.data.domain.PageRequest;
 import com.spring.blog.repository.PostRepository;
 
 
@@ -30,7 +31,7 @@ public class SiteMapService {
     @Transactional(readOnly = true)
     public SiteMap getSiteMap() {
         List<SitemapUrl> urls = postRepository
-                .findSitemapData(Status.PUBLISHED)
+                .findSitemapData(Status.PUBLISHED, PageRequest.of(0, 1000))
                 .stream()
                 .map(post -> new SitemapUrl(
                         baseUrl + "/api/posts/" + post.getSlug(),

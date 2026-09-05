@@ -1,51 +1,253 @@
-/* Minimal custom styles for Spring Blog UI */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+    --paper: #f3eee4;
+    --paper-2: #fffdf8;
+    --ink: #1c1915;
+    --muted: #6b645a;
+    --line: #e4dccf;
+    --accent: #b54a2c;
+    --accent-dark: #8f3820;
+    --sage: #3e5c4e;
+    --shadow: 0 10px 30px rgba(28, 25, 21, 0.06);
+}
+
 body {
-    background-color: #f8f9fa;
-    color: #212529;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--paper);
+    background-image:
+        radial-gradient(ellipse at top, rgba(181, 74, 44, 0.05), transparent 42%),
+        linear-gradient(180deg, #f7f2ea 0%, var(--paper) 220px);
+    color: var(--ink);
+    font-family: "Source Sans 3", system-ui, sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+h1, h2, h3, h4, .navbar-brand, .display-title {
+    font-family: Fraunces, Georgia, serif;
+    letter-spacing: -0.02em;
 }
 
 main {
     flex: 1;
 }
 
-/* Card Enhancements */
+a {
+    color: var(--accent);
+}
+
+a:hover {
+    color: var(--accent-dark);
+}
+
+.site-nav {
+    background: rgba(28, 25, 21, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.site-nav .navbar-brand {
+    color: #f7f2ea !important;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.site-nav .navbar-brand .brand-dot {
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-right: 0.45rem;
+    border-radius: 999px;
+    background: var(--accent);
+    vertical-align: 0.12em;
+}
+
+.site-nav .nav-link {
+    color: rgba(247, 242, 234, 0.72) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding-inline: 0.7rem !important;
+}
+
+.site-nav .nav-link:hover,
+.site-nav .nav-link.active {
+    color: #fff !important;
+}
+
+.site-nav .nav-link.active {
+    position: relative;
+}
+
+.site-nav .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: 0.25rem;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+}
+
+.page-kicker {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.page-lede {
+    color: var(--muted);
+    margin-bottom: 0;
+}
+
 .post-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border-radius: 0.75rem;
+    background: var(--paper-2);
+    border: 1px solid var(--line) !important;
+    border-radius: 1rem;
+    box-shadow: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .post-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-3px);
+    border-color: #d3c7b4 !important;
+    box-shadow: var(--shadow) !important;
 }
 
-/* Tag Badge */
+.post-card .card-title a {
+    color: var(--ink);
+}
+
+.post-card .card-title a:hover {
+    color: var(--accent);
+}
+
 .tag-badge {
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
-    transition: opacity 0.15s ease-in-out;
+    background: #efe6d6 !important;
+    color: var(--ink) !important;
+    border-radius: 999px;
+    padding: 0.35em 0.7em;
 }
 
 .tag-badge:hover {
-    opacity: 0.85;
+    background: #e4d6bf !important;
+    color: var(--accent-dark) !important;
 }
 
-/* Comment Item */
 .comment-item {
-    border-left: 3px solid #0d6efd;
-    background-color: #fff;
-    border-radius: 0 0.5rem 0.5rem 0;
+    border-left: 3px solid var(--accent);
+    background-color: var(--paper-2);
+    border-radius: 0 0.75rem 0.75rem 0;
 }
 
-/* Spinner Overlay */
 .spinner-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
+    padding: 2.5rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent-dark);
+    --bs-btn-hover-border-color: var(--accent-dark);
+    --bs-btn-active-bg: var(--accent-dark);
+    --bs-btn-active-border-color: var(--accent-dark);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-bg: var(--accent-dark);
+    --bs-btn-active-border-color: var(--accent-dark);
+}
+
+.btn-success {
+    --bs-btn-bg: var(--sage);
+    --bs-btn-border-color: var(--sage);
+    --bs-btn-hover-bg: #31493d;
+    --bs-btn-hover-border-color: #31493d;
+}
+
+.nav-tabs {
+    border-bottom-color: var(--line);
+}
+
+.nav-tabs .nav-link {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--ink);
+    background: var(--paper-2);
+    border-color: var(--line) var(--line) var(--paper-2);
+}
+
+.card {
+    background: var(--paper-2);
+    border-color: var(--line);
+}
+
+.form-control, .form-select {
+    background: #fff;
+    border-color: var(--line);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #d09a86;
+    box-shadow: 0 0 0 0.2rem rgba(181, 74, 44, 0.15);
+}
+
+.mode-toggle .btn {
+    border-radius: 999px;
+    padding-inline: 0.9rem;
+}
+
+.empty-state {
+    background: var(--paper-2);
+    border: 1px dashed var(--line);
+    border-radius: 1rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--muted);
+}
+
+.site-footer {
+    border-top: 1px solid var(--line);
+    padding: 1.25rem 0;
+    margin-top: auto;
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.table {
+    --bs-table-bg: var(--paper-2);
+}
+
+.feed-meta {
+    background: #efe6d6;
+    border: 0;
+}
+
+.badge.bg-info {
+    background: #efe6d6 !important;
+    color: var(--ink) !important;
 }

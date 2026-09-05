@@ -13,9 +13,9 @@
 <body x-data="searchPosts()">
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg site-nav sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">Spring Blog</a>
+            <a class="navbar-brand" href="index.html"><span class="brand-dot"></span>Spring Blog</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -46,7 +46,8 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 
-                <h1 class="h3 fw-bold mb-4">Search Posts</h1>
+                <p class="page-kicker">Find</p>
+                <h1 class="page-title mb-4">Search posts</h1>
 
                 <!-- Search Input Bar -->
                 <form @submit.prevent="performSearch()" class="mb-4">
@@ -113,8 +114,8 @@
 
                         <!-- No Results -->
                         <template x-if="results.length === 0">
-                            <div class="text-center py-5 bg-white rounded shadow-sm">
-                                <p class="text-muted fs-5 mb-0">No results found for "<span x-text="query"></span>".</p>
+                            <div class="empty-state">
+                                <p class="fs-5 mb-0">No results found for "<span x-text="query"></span>".</p>
                             </div>
                         </template>
                     </div>
@@ -124,11 +125,8 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-        <div class="container">
-            Spring Boot Blog UI &copy; 2026
-        </div>
+    <footer class="site-footer">
+        <div class="container">Spring Blog &copy; 2026</div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

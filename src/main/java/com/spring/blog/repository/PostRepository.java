@@ -24,7 +24,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	List<PostRssProjection> findRssData(@Param("status") Status status, Pageable pageable);
 
 	@Query("select p.slug as slug, p.updated as updated from Post p where p.status = :status order by p.publish desc")
-	List<PostSitemapProjection> findSitemapData(@Param("status") Status status);
+	List<PostSitemapProjection> findSitemapData(@Param("status") Status status, Pageable pageable);
 
 	@EntityGraph(attributePaths = { "author", "tags" })
 	Optional<Post> findBySlugAndStatus(String slug, Status status);
