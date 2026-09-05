@@ -17,7 +17,7 @@ import com.spring.blog.model.TagModel;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-	List<Post> findByStatusOrderByPublishDesc(Status status);
+	Page<Post> findByStatusOrderByPublishDesc(Status status, Pageable pageable);
 
 	@Query("select p.slug as slug, p.updated as updated from Post p where p.status = :status order by p.publish desc")
 	List<PostSitemapProjection> findSitemapData(@Param("status") Status status);

@@ -17,7 +17,6 @@ import com.spring.blog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Cacheable(value = "sitemap")
 @RequiredArgsConstructor
 public class SiteMapService {
     private final PostRepository postRepository;
@@ -27,6 +26,7 @@ public class SiteMapService {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    @Cacheable(value = "sitemap")
     @Transactional(readOnly = true)
     public SiteMap getSiteMap() {
         List<SitemapUrl> urls = postRepository
