@@ -45,8 +45,7 @@ public class TagService {
 
     }
 
-    @Cacheable(value = "posts-by-tag", key = "#tagName")
-    @Transactional
+    @Transactional(readOnly = true)
     public Set<TagModel> getTagsByPost(String slug) {
         Post post = postRepository.findBySlugAndStatusWithTags(slug, Status.PUBLISHED)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found: " + slug));
