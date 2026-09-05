@@ -15,6 +15,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -30,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
+@Validated
 @RestController
 @RequestMapping("api/posts")
 @Tag(name = "Posts")
@@ -80,7 +84,7 @@ public class PostController {
     @Operation(summary = "List posts with keyset pagination")
     public ResponseEntity<KeysetPostResponse> getPostsKeyset(
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
         return ResponseEntity.ok().header("Cache-Control", "public, max-age=60")
                 .body(postService.getPostsKeyset(cursor, size));
     }
