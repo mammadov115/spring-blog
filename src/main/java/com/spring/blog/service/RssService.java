@@ -33,8 +33,8 @@ public class RssService {
 	@Transactional(readOnly = true)
 	public RssFeed getFeed() {
 		List<RssItem> items = postRepository
-				.findByStatusOrderByPublishDesc(Status.PUBLISHED, PageRequest.of(0, 20))
-				.getContent().stream()
+				.findRssData(Status.PUBLISHED, PageRequest.of(0, 20))
+				.stream()
 				.map(post -> new RssItem(post.getTitle(), baseUrl + "/api/posts/" + post.getSlug(),
 						post.getBody().length() > 200 ? post.getBody().substring(0, 200) + "..."
 								: post.getBody(),
