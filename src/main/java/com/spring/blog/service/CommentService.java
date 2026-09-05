@@ -35,8 +35,10 @@ public class CommentService {
 
     @Transactional
     public CommentResponse addComment(Long postId, CommentRequest request) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id " + postId));
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post not found with id " + postId);
+        }
+        Post post = postRepository.getReferenceById(postId);
 
         Comment comment = Comment.builder()
                 .post(post)

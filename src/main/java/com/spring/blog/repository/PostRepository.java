@@ -30,6 +30,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 			""")
 	Page<Post> findByStatus(@Param("status") Status status, Pageable pageable);
 
+	@EntityGraph(attributePaths = { "author", "tags" })
 	List<Post> findByTagsContaining(TagModel tag);
 
 	@EntityGraph(attributePaths = { "author", "tags" })

@@ -33,12 +33,23 @@ public class TagService {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-        Set<TagModel> tags = tagNames.stream()
+        Set<String> validNames = tagNames.stream()
                 .filter(name -> name != null && !name.isBlank() && name.length() <= 100)
-                .map(name -> tagRepository.findByName(name)
-                        .orElseGet(() -> tagRepository
-                                .save(TagModel.builder().name(name).build())))
                 .collect(Collectors.toSet());
+
+        Set<TagModel> existingTags = tagRepository.findByNameIn(validNames);
+        Set<String> existingNames = existingTags.stream()
+                .map(TagModel::getName)
+                .collect(Collectors.toSet());
+
+        Set<TagModel> newTags = validNames.stream()
+                .filter(name -> !existingNames.contains(name))
+                .map(name -> tagRepository.save(TagModel.builder().name(name).build()))
+                .collect(Collectors.toSet());
+
+        Set<TagModel> tags = new java.util.HashSet<>();
+        tags.addAll(existingTags);
+        tags.addAll(newTags);
 
         post.getTags().addAll(tags);
         return postMapper.toResponse(postRepository.save(post));
