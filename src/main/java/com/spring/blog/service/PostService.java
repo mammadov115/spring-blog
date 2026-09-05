@@ -59,10 +59,6 @@ public class PostService {
                         .collect(Collectors.toSet()));
     }
 
-    public List<Post> getPosts() {
-        return postRepository.findByStatusOrderByPublishDesc(Status.PUBLISHED);
-    }
-
     public Post getPostById(Long id) {
         return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     }

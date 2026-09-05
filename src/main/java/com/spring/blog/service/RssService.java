@@ -38,7 +38,7 @@ public class RssService {
 				.map(post -> new RssItem(post.getTitle(), baseUrl + "/api/posts/" + post.getSlug(),
 						post.getBody().length() > 200 ? post.getBody().substring(0, 200) + "..."
 								: post.getBody(),
-						post.getPublish().format(FORMATTER),
+						post.getPublish() != null ? post.getPublish().format(FORMATTER) : "",
 						baseUrl + "/api/posts/" + post.getSlug()))
 				.toList();
 

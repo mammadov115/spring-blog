@@ -27,6 +27,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 	boolean existsBySlug(String slug);
 
+	@EntityGraph(attributePaths = { "author", "tags" })
 	@Query("""
 			select p from Post p
 			where p.status = :status
@@ -69,6 +70,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	@Query("SELECT p FROM Post p LEFT JOIN FETCH p.tags WHERE p.slug = :slug AND p.status = :status")
 	Optional<Post> findBySlugAndStatusWithTags(@Param("slug") String slug, @Param("status") Status status);
 
+	@EntityGraph(attributePaths = { "author", "tags" })
 	@Query("""
 			select p from Post p
 			where p.status = :status
