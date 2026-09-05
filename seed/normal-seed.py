@@ -28,7 +28,7 @@ def batch_insert_with_progress(cur, query, data, label):
             pbar.update(len(batch))
     conn.commit()
 
-# ── USERS ──────────────────────────────────────────────
+#  USERS 
 print("\n📦 Generating users...")
 users = []
 for _ in tqdm(range(100_000), desc="Generating users", unit="rows"):
@@ -43,7 +43,7 @@ batch_insert_with_progress(cur, """
     VALUES (%s, %s, %s)
 """, users, "Inserting users")
 
-# ── POSTS ──────────────────────────────────────────────
+# POSTS 
 cur.execute("SELECT id FROM users")
 user_ids = [r[0] for r in cur.fetchall()]
 
@@ -73,7 +73,7 @@ batch_insert_with_progress(cur, """
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 """, posts, "Inserting posts")
 
-# ── TAGS ───────────────────────────────────────────────
+#  TAGS 
 print("\n📦 Generating tags...")
 tag_names = list(set([fake.word() for _ in range(500)]))
 tags = [(t,) for t in tag_names]
@@ -86,7 +86,7 @@ batch_insert_with_progress(cur, """
 cur.execute("SELECT id FROM tags")
 tag_ids = [r[0] for r in cur.fetchall()]
 
-# ── POST_TAGS ──────────────────────────────────────────
+#  POST_TAGS 
 print("\n📦 Generating post_tags...")
 cur.execute("SELECT id FROM posts")
 post_ids = [r[0] for r in cur.fetchall()]
@@ -102,7 +102,7 @@ batch_insert_with_progress(cur, """
     ON CONFLICT DO NOTHING
 """, list(post_tags), "Inserting post_tags")
 
-# ── COMMENTS ───────────────────────────────────────────
+#  COMMENTS 
 print("\n📦 Generating comments...")
 comments = []
 for _ in tqdm(range(400_000), desc="Generating comments", unit="rows"):
