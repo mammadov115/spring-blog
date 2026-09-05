@@ -15,6 +15,7 @@ import com.spring.blog.model.Status;
 import com.spring.blog.model.TagModel;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
+
 	List<Post> findByStatusOrderByPublishDesc(Status status);
 
 	@EntityGraph(attributePaths = { "author", "tags" })
@@ -23,10 +24,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	boolean existsBySlug(String slug);
 
 	@Query("""
-		select p from Post p
-		where p.status = :status
-		order by p.publish desc nulls last, p.id desc
-		""")
+			select p from Post p
+			where p.status = :status
+			order by p.publish desc nulls last, p.id desc
+			""")
 	Page<Post> findByStatus(@Param("status") Status status, Pageable pageable);
 
 	List<Post> findByTagsContaining(TagModel tag);
@@ -41,19 +42,26 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 			and p.id != :postId
 			and p.status = :status
 			order by p.publish desc
-				""")
+			""")
 	List<Post> findSimilarPosts(
 			@Param("postId") Long postId,
 			@Param("status") Status status,
 			Pageable pageable);
 
+	// Mərhələ 1: yalnız ID-ləri al, rank sırası qorunur
 	@Query(value = """
-			    select * from posts
+			    select id from posts
 			    where status = 'PUBLISHED'
 			    and search_vector @@ plainto_tsquery('english', :query)
 			    order by ts_rank(search_vector, plainto_tsquery('english', :query)) desc
+			    limit 20
 			""", nativeQuery = true)
-	List<Post> fullTextSearch(@Param("query") String query);
+	List<Long> fullTextSearchIds(@Param("query") String query);
+
+	
+	@EntityGraph(attributePaths = { "author", "tags" })
+	@Query("select p from Post p where p.id in :ids")
+	List<Post> findByIds(@Param("ids") List<Long> ids);
 
 	@Query("SELECT p FROM Post p LEFT JOIN FETCH p.tags WHERE p.slug = :slug AND p.status = :status")
 	Optional<Post> findBySlugAndStatusWithTags(@Param("slug") String slug, @Param("status") Status status);

@@ -2,6 +2,8 @@ package com.spring.blog.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,8 @@ public class PostService {
     private final PostMapper postMapper;
 
     private static String stripNullBytes(String s) {
-        if (s == null) return null;
+        if (s == null)
+            return null;
         return s.replaceAll("\u0000", "");
     }
 
@@ -94,9 +97,23 @@ public class PostService {
         return similarPosts.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Cacheable(value = "search", key = "#query")
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String query) {
-        return postRepository.fullTextSearch(query).stream().map(postMapper::toResponse).collect(Collectors.toList());
+        List<Long> ids = postRepository.fullTextSearchIds(query);
+        if (ids.isEmpty())
+            return List.of();
+
+        // ID sıralamasını qorumaq üçün (rank sırası pozulmasın)
+        List<Post> posts = postRepository.findByIds(ids);
+        Map<Long, Post> postMap = posts.stream()
+                .collect(Collectors.toMap(Post::getId, p -> p));
+
+        return ids.stream()
+                .map(postMap::get)
+                .filter(Objects::nonNull)
+                .map(postMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

@@ -23,15 +23,14 @@ public class CacheConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory factory) {
 
-        // "post" cache: tək obyekt, defaultTyping-li generic serializer problemsizdir
         GenericJacksonJsonRedisSerializer genericSerializer = GenericJacksonJsonRedisSerializer.builder()
                 .enableDefaultTyping(BasicPolymorphicTypeValidator.builder()
                         .allowIfBaseType(Object.class)
                         .build())
                 .build();
 
-        // "similar" cache: List<PostResponse> — konkret tip, polymorphic typing YOX (bug-a səbəb olan budur)
-        JacksonJsonRedisSerializer<List<PostResponse>> similarSerializer =
+        // similar və search cache-ləri üçün eyni typed serializer
+        JacksonJsonRedisSerializer<List<PostResponse>> listSerializer =
                 new JacksonJsonRedisSerializer<>(
                         TypeFactory.createDefaultInstance()
                                 .constructCollectionType(List.class, PostResponse.class));
@@ -46,14 +45,17 @@ public class CacheConfig {
                         RedisSerializationContext.SerializationPair
                                 .fromSerializer(genericSerializer));
 
-        RedisCacheConfiguration similarConfig = defaultConfig
+        RedisCacheConfiguration listConfig = defaultConfig
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
-                                .fromSerializer(similarSerializer));
+                                .fromSerializer(listSerializer));
 
         return RedisCacheManager.builder(factory)
                 .cacheDefaults(defaultConfig)
-                .withInitialCacheConfigurations(Map.of("similar", similarConfig))
+                .withInitialCacheConfigurations(Map.of(
+                        "similar", listConfig,
+                        "search",  listConfig
+                ))
                 .build();
     }
 }
