@@ -48,17 +48,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 			@Param("status") Status status,
 			Pageable pageable);
 
-	// Mərhələ 1: yalnız ID-ləri al, rank sırası qorunur
 	@Query(value = """
 			    select id from posts
 			    where status = 'PUBLISHED'
 			    and search_vector @@ plainto_tsquery('english', :query)
-			    order by ts_rank(search_vector, plainto_tsquery('english', :query)) desc
+			    order by publish desc
 			    limit 20
 			""", nativeQuery = true)
 	List<Long> fullTextSearchIds(@Param("query") String query);
 
-	
 	@EntityGraph(attributePaths = { "author", "tags" })
 	@Query("select p from Post p where p.id in :ids")
 	List<Post> findByIds(@Param("ids") List<Long> ids);

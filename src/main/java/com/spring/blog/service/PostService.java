@@ -2,9 +2,9 @@ package com.spring.blog.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
@@ -101,10 +101,8 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String query) {
         List<Long> ids = postRepository.fullTextSearchIds(query);
-        if (ids.isEmpty())
-            return List.of();
+        if (ids.isEmpty()) return List.of();
 
-        // ID sıralamasını qorumaq üçün (rank sırası pozulmasın)
         List<Post> posts = postRepository.findByIds(ids);
         Map<Long, Post> postMap = posts.stream()
                 .collect(Collectors.toMap(Post::getId, p -> p));
