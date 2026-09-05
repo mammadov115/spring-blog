@@ -24,6 +24,9 @@ public class CommentService {
     private final PostRepository postRepository;
 
     public List<CommentResponse> getCommentByPost(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post not found with id " + postId);
+        }
         return commentRepository
                 .findByPostIdOrderByCreatedDesc(postId).stream().map(comment -> new CommentResponse(comment.getId(),
                         comment.getName(), comment.getEmail(), comment.getBody(), comment.getCreated()))

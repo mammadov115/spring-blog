@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.spring.blog.dto.PostResponse;
@@ -30,19 +29,19 @@ public class TagService {
 
     @CacheEvict(value = "posts-by-tag", allEntries = true)
     @Transactional
-    public Post addTagsToPost(String slug, Set<String> tagNames) {
+    public PostResponse addTagsToPost(String slug, Set<String> tagNames) {
         Post post = postRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
         Set<TagModel> tags = tagNames.stream()
+                .filter(name -> name != null && !name.isBlank() && name.length() <= 100)
                 .map(name -> tagRepository.findByName(name)
                         .orElseGet(() -> tagRepository
                                 .save(TagModel.builder().name(name).build())))
                 .collect(Collectors.toSet());
 
         post.getTags().addAll(tags);
-        return postRepository.save(post);
-
+        return postMapper.toResponse(postRepository.save(post));
     }
 
     @Transactional(readOnly = true)

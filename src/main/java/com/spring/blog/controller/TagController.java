@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.blog.dto.PostResponse;
-import com.spring.blog.model.Post;
+
 import com.spring.blog.model.TagModel;
 import com.spring.blog.service.TagService;
 
@@ -29,8 +29,8 @@ public class TagController {
 
     @PostMapping("/posts/{slug}/tags")
     @Operation(summary = "Add tags to post")
-    public Post addTagsToPost(@PathVariable String slug, @RequestBody Set<String> tagName) {
-        return tagService.addTagsToPost(slug, tagName);
+    public ResponseEntity<PostResponse> addTagsToPost(@PathVariable String slug, @RequestBody Set<String> tagName) {
+        return ResponseEntity.ok(tagService.addTagsToPost(slug, tagName));
     }
 
     @GetMapping("/posts/{slug}/tags")
