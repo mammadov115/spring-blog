@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.spring.blog.dto.PostSitemapProjection;
 
 import com.spring.blog.model.Post;
 import com.spring.blog.model.Status;
@@ -17,6 +18,9 @@ import com.spring.blog.model.TagModel;
 public interface PostRepository extends JpaRepository<Post, Long> {
 
 	List<Post> findByStatusOrderByPublishDesc(Status status);
+
+	@Query("select p.slug as slug, p.updated as updated from Post p where p.status = :status order by p.publish desc")
+	List<PostSitemapProjection> findSitemapData(@Param("status") Status status);
 
 	@EntityGraph(attributePaths = { "author", "tags" })
 	Optional<Post> findBySlugAndStatus(String slug, Status status);

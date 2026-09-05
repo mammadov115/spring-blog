@@ -30,7 +30,7 @@ public class SiteMapService {
     @Transactional(readOnly = true)
     public SiteMap getSiteMap() {
         List<SitemapUrl> urls = postRepository
-                .findByStatusOrderByPublishDesc(Status.PUBLISHED)
+                .findSitemapData(Status.PUBLISHED)
                 .stream()
                 .map(post -> new SitemapUrl(
                         baseUrl + "/api/posts/" + post.getSlug(),
@@ -39,6 +39,5 @@ public class SiteMapService {
                         "0.8"))
                 .toList();
         return new SiteMap(urls);
-
     }
 }
